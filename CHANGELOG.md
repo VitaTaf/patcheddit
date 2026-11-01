@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/VitaTaf/patcheddit/compare/v2.0.3...v2.0.4) (2026-11-01)
+
+
+### Bug Fixes
+
+* Emulate removed Redgifs /info endpoint and fix Sync gif ids ([69dc24d](https://github.com/VitaTaf/patcheddit/commit/69dc24d3f8e4585725dd361a5e8358a01db9d591)), closes [#100](https://github.com/VitaTaf/patcheddit/issues/100)
+
 ## [2.0.3](https://github.com/wchill/patcheddit/compare/v2.0.2...v2.0.3) (2026-10-30)
 
 
