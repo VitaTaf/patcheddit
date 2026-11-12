@@ -1,3 +1,11 @@
+## [2.1.2-dev.2](https://github.com/VitaTaf/patcheddit/compare/v2.1.2-dev.1...v2.1.2-dev.2) (2026-11-12)
+
+
+### Bug Fixes
+
+* compile comment loading fingerprint ([6ff9dcd](https://github.com/VitaTaf/patcheddit/commit/6ff9dcd83edbcb71b5492c60accd6ea123fbfe89))
+* Improve comment loading ([5341a73](https://github.com/VitaTaf/patcheddit/commit/5341a73d8fc084199b2513e06571330a3fe60bf7))
+
 ## [2.1.2-dev.1](https://github.com/VitaTaf/patcheddit/compare/v2.1.1...v2.1.2-dev.1) (2026-11-12)
 
 
