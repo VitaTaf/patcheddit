@@ -49,12 +49,14 @@ val optimizeCommentCollapsePatch = bytecodePatch(
             //   invoke-virtual {v4}, Comment.level()
             //   move-result v5
             //
-            // v4 already contains the Cursor immediately before this block. Keep it there and
-            // fetch only the level column needed by the traversal.
+            // v4 already contains the Cursor immediately before this block. The original
+            // Comment.fromCursor(Cursor, position) call also moves that shared Cursor to v2;
+            // preserve that side effect before reading the two fields directly.
             removeInstructions(parseCommentIndex, 4)
             addInstructions(
                 parseCommentIndex,
                 """
+                    invoke-interface {v4, v2}, Landroid/database/Cursor;->moveToPosition(I)Z
                     const-string v5, "level"
                     invoke-interface {v4, v5}, Landroid/database/Cursor;->getColumnIndex(Ljava/lang/String;)I
                     move-result v5
@@ -63,11 +65,10 @@ val optimizeCommentCollapsePatch = bytecodePatch(
                 """,
             )
 
-            // The replacement above adds one instruction relative to the original block. Find the
-            // subsequent no-argument String getter on the comment model (the child id getter),
+            // Find the subsequent no-argument String getter on the comment model (the child id getter),
             // then read _id directly from the Cursor still held in v4.
             val childIdIndex = instructions.withIndex()
-                .drop(parseCommentIndex + 5)
+                .drop(parseCommentIndex + 6)
                 .first { (_, instruction) ->
                     if (instruction.opcode != Opcode.INVOKE_VIRTUAL) return@first false
                     val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
