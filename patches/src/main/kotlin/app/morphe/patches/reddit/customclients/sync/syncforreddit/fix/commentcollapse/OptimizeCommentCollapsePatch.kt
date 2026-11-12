@@ -6,9 +6,9 @@ import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.all.misc.PatchCategory
 import app.morphe.patches.reddit.customclients.AppCompatibility
-import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 /**
@@ -34,7 +34,8 @@ val optimizeCommentCollapsePatch = bytecodePatch(
 
             val parseCommentIndex = indexOfFirstInstructionOrThrow {
                 if (opcode != Opcode.INVOKE_STATIC) return@indexOfFirstInstructionOrThrow false
-                val reference = getReference<MethodReference>() ?: return@indexOfFirstInstructionOrThrow false
+                val reference = (this as? ReferenceInstruction)?.reference as? MethodReference
+                    ?: return@indexOfFirstInstructionOrThrow false
 
                 reference.definingClass == commentType &&
                     reference.returnType == commentType &&
@@ -69,7 +70,8 @@ val optimizeCommentCollapsePatch = bytecodePatch(
                 .drop(parseCommentIndex + 5)
                 .first { (_, instruction) ->
                     if (instruction.opcode != Opcode.INVOKE_VIRTUAL) return@first false
-                    val reference = instruction.getReference<MethodReference>() ?: return@first false
+                    val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
+                        ?: return@first false
 
                     reference.definingClass == commentType &&
                         reference.returnType == "Ljava/lang/String;" &&

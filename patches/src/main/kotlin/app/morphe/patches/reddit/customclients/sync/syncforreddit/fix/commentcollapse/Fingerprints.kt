@@ -2,7 +2,7 @@ package app.morphe.patches.reddit.customclients.sync.syncforreddit.fix.commentco
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
-import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 /**
@@ -19,7 +19,7 @@ internal object CollapseCommentTreeFingerprint : Fingerprint(
             method.parameterTypes.size == 2 &&
             method.parameterTypes[1].toString() == "Z" &&
             method.instructions.any {
-                it.getReference<FieldReference>()?.let { field ->
+                ((it as? ReferenceInstruction)?.reference as? FieldReference)?.let { field ->
                     field.name == "collapseParent" && field.type == "Z"
                 } == true
             }
