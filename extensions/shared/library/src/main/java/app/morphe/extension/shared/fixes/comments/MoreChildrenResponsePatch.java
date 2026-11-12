@@ -50,6 +50,7 @@ public final class MoreChildrenResponsePatch extends RedditRouteResponseShim {
         String postId = stripPrefix(linkId, "t3_");
         String sort = parameters.get("sort");
         String profileImg = parameters.get("profile_img");
+        String depth = parameters.get("depth");
 
         LinkedHashSet<String> targetIds = new LinkedHashSet<>();
         for (String child : children.split(",")) {
@@ -66,7 +67,7 @@ public final class MoreChildrenResponsePatch extends RedditRouteResponseShim {
             if (emittedIds.contains(childId)) continue;
 
             Request focusedRequest = request.newBuilder()
-                    .url(focusedCommentUrl(request.url(), postId, childId, sort, profileImg))
+                    .url(focusedCommentUrl(request.url(), postId, childId, sort, profileImg, depth))
                     .get()
                     .build();
             Response response = chain.proceed(focusedRequest);
@@ -115,7 +116,8 @@ public final class MoreChildrenResponsePatch extends RedditRouteResponseShim {
             String postId,
             String commentId,
             String sort,
-            String profileImg
+            String profileImg,
+            String depth
     ) {
         HttpUrl.Builder url = original.newBuilder()
                 .encodedPath("/comments/" + postId + "/comment/" + commentId + ".json")
@@ -125,6 +127,13 @@ public final class MoreChildrenResponsePatch extends RedditRouteResponseShim {
         if (sort != null && !sort.isEmpty()) url.addQueryParameter("sort", sort);
         if (profileImg != null && !profileImg.isEmpty()) {
             url.addQueryParameter("profile_img", profileImg);
+        }
+        // Sync marks its progressive "All" loads with depth=10. For those requests, ask the
+        // focused comments endpoint for the largest useful subtree so fewer MoreComments
+        // placeholders and network round trips remain afterward.
+        if (depth != null && !depth.isEmpty()) {
+            url.addQueryParameter("depth", depth);
+            url.addQueryParameter("limit", "500");
         }
         return url.build();
     }
