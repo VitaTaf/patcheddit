@@ -1,3 +1,10 @@
+## [2.1.2-dev.1](https://github.com/VitaTaf/patcheddit/compare/v2.1.1...v2.1.2-dev.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* Sync comment collapse ([a0688fd](https://github.com/VitaTaf/patcheddit/commit/a0688fd964cfcc8144702e9e02eb6d38143b0ae7))
+
 ## [2.1.1](https://github.com/VitaTaf/patcheddit/compare/v2.1.0...v2.1.1) (2026-11-12)
 
 # [2.1.0](https://github.com/VitaTaf/patcheddit/compare/v2.0.4...v2.1.0) (2026-11-12)

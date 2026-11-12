@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-12T05:57:53",
-  "description": "## [2.1.1](https://github.com/VitaTaf/patcheddit/compare/v2.1.0...v2.1.1) (2026-11-12)",
-  "download_url": "https://github.com/VitaTaf/patcheddit/releases/download/v2.1.1/patches-2.1.1.mpp",
-  "signature_download_url": "https://github.com/VitaTaf/patcheddit/releases/download/v2.1.1/patches-2.1.1.mpp.asc",
-  "version": "2.1.1"
+  "created_at": "2026-11-12T06:10:57",
+  "description": "## [2.1.2-dev.1](https://github.com/VitaTaf/patcheddit/compare/v2.1.1...v2.1.2-dev.1) (2026-11-12)\n\n\n### Bug Fixes\n\n* Sync comment collapse ([a0688fd](https://github.com/VitaTaf/patcheddit/commit/a0688fd964cfcc8144702e9e02eb6d38143b0ae7))",
+  "download_url": "https://github.com/VitaTaf/patcheddit/releases/download/v2.1.2-dev.1/patches-2.1.2-dev.1.mpp",
+  "signature_download_url": "https://github.com/VitaTaf/patcheddit/releases/download/v2.1.2-dev.1/patches-2.1.2-dev.1.mpp.asc",
+  "version": "2.1.2-dev.1"
 }
