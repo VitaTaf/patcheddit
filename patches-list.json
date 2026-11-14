@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "2.1.2-dev.2",
+  "version": "2.1.2-dev.3",
   "patches": [
     {
       "name": "Add Boost Search bottom navigation",
@@ -1674,69 +1674,6 @@
           "targets": [
             {
               "version": "1.14.3",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Improve loading all comments",
-      "description": "Makes the All comment-count option load remaining comments automatically and show the first comments sooner.",
-      "default": true,
-      "category": "Comments & posting",
-      "compatiblePackages": [
-        {
-          "packageName": "com.laurencedawson.reddit_sync",
-          "name": "Sync for Reddit",
-          "description": null,
-          "apkFileType": null,
-          "appIconColor": null,
-          "signatures": null,
-          "formFactor": "MOBILE",
-          "targets": [
-            {
-              "version": "v23.06.30-13:39",
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        },
-        {
-          "packageName": "com.laurencedawson.reddit_sync.pro",
-          "name": "Sync for Reddit Pro",
-          "description": null,
-          "apkFileType": null,
-          "appIconColor": null,
-          "signatures": null,
-          "formFactor": "MOBILE",
-          "targets": [
-            {
-              "version": null,
-              "versionCodes": null,
-              "isExperimental": false,
-              "minSdk": null,
-              "description": null
-            }
-          ]
-        },
-        {
-          "packageName": "com.laurencedawson.reddit_sync.dev",
-          "name": "Sync for Reddit Dev",
-          "description": null,
-          "apkFileType": null,
-          "appIconColor": null,
-          "signatures": null,
-          "formFactor": "MOBILE",
-          "targets": [
-            {
-              "version": null,
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
