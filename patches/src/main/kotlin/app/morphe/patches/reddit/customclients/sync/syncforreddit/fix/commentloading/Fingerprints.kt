@@ -30,7 +30,7 @@ internal object MoreCommentsSuccessFingerprint : Fingerprint(
     parameters = listOf("Ljava/lang/Void;"),
     custom = { method, classDef ->
         classDef.sourceFile == "CommentsPresenterImpl.java" &&
-            method.instructions.count() == 4 &&
+            method.instructions.size == 4 &&
             method.instructions.any { it.opcode == Opcode.IPUT_OBJECT }
     },
 )
