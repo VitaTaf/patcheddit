@@ -1,3 +1,10 @@
+## [2.1.2-dev.4](https://github.com/VitaTaf/patcheddit/compare/v2.1.2-dev.3...v2.1.2-dev.4) (2026-11-17)
+
+
+### Bug Fixes
+
+* Improve comment loading ([3f34fd3](https://github.com/VitaTaf/patcheddit/commit/3f34fd39490e83046587cb9cdc0ec7bf8d5cfa80))
+
 ## [2.1.2-dev.3](https://github.com/VitaTaf/patcheddit/compare/v2.1.2-dev.2...v2.1.2-dev.3) (2026-11-14)
 
 
