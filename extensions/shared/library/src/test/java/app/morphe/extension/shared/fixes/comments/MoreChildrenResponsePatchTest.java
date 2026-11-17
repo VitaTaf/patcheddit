@@ -63,6 +63,29 @@ public class MoreChildrenResponsePatchTest {
     }
 
     @Test
+    public void expandsProgressiveAllRequestsWithMaximumFocusedSubtree() throws Exception {
+        List<Request> requests = new ArrayList<>();
+        OkHttpClient client = client(requests, listing(comment("child", "parent")));
+
+        Request allRequest = new Request.Builder()
+                .url("https://oauth.reddit.com/api/morechildren")
+                .header("Authorization", "Bearer fixture")
+                .post(new FormBody.Builder()
+                        .add("link_id", "t3_post")
+                        .add("children", "child")
+                        .add("sort", "new")
+                        .add("depth", "10")
+                        .build())
+                .build();
+
+        try (Response ignored = client.newCall(allRequest).execute()) {
+            assertEquals(1, requests.size());
+            assertEquals("10", requests.get(0).url().queryParameter("depth"));
+            assertEquals("500", requests.get(0).url().queryParameter("limit"));
+        }
+    }
+
+    @Test
     public void doesNotFetchOrEmitRequestedDescendantsTwice() throws Exception {
         List<Request> requests = new ArrayList<>();
         JSONObject child = comment("child", "parent",
