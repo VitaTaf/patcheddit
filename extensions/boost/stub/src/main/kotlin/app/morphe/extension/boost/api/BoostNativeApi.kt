@@ -159,6 +159,12 @@ abstract class InjectorUtils protected constructor(stub: Unit) {
 abstract class LRUCache protected constructor(stub: Unit) : java.util.LinkedHashMap<Any?, Any?>() {
 }
 
+abstract class LinkMenu protected constructor(stub: Unit) {
+    @JvmField var context: android.content.Context = boostApiStub()
+    @JvmField var dialog: com.afollestad.materialdialogs.MaterialDialog? = boostApiStub()
+    @JvmField var url: String = boostApiStub()
+}
+
 abstract class MediaBaseActivity protected constructor(stub: Unit) : com.rubenmayayo.reddit.ui.activities.BaseActivity(Unit) {
 }
 
@@ -234,6 +240,14 @@ abstract class PostHistoryUtils protected constructor(stub: Unit) {
     companion object {
         @JvmStatic fun getInstance(): app.morphe.extension.boost.api.PostHistoryUtils? = boostApiStub()
     }
+}
+
+class ProfileAvatarDrawable(p0: android.graphics.Bitmap) : android.graphics.drawable.Drawable() {
+    @JvmField val bitmap: android.graphics.Bitmap = boostApiStub()
+    override fun draw(canvas: android.graphics.Canvas): Unit = boostApiStub()
+    override fun setAlpha(alpha: Int): Unit = boostApiStub()
+    override fun setColorFilter(colorFilter: android.graphics.ColorFilter?): Unit = boostApiStub()
+    override fun getOpacity(): Int = boostApiStub()
 }
 
 abstract class ProgressRequestBody protected constructor(stub: Unit) : okhttp3.RequestBody() {

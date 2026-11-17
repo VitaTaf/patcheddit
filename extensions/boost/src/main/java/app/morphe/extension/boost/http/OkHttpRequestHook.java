@@ -16,11 +16,11 @@ import app.morphe.extension.boost.http.imgur.ImgurUndeleteInterceptor;
 import app.morphe.extension.boost.http.reddit.RedditMediaUndeleteInterceptor;
 import app.morphe.extension.boost.http.reddit.RedditSubmissionUndeleteInterceptor;
 import app.morphe.extension.boost.http.reddit.RedditSubredditUndeleteInterceptor;
-import app.morphe.extension.boost.http.redgifs.RedgifsUrlSanitizerInterceptor;
 import app.morphe.extension.boost.http.wayback.WaybackThrottlingInterceptor;
+import app.morphe.extension.shared.fixes.api.FailedGalleryMetadataPatch;
 import app.morphe.extension.shared.fixes.api.RedditInfoResponsePatch;
-import app.morphe.extension.shared.fixes.comments.MoreChildrenResponsePatch;
 import app.morphe.extension.shared.fixes.feed.RAllPatch;
+import app.morphe.extension.shared.fixes.links.EscapedUrlsPatch;
 import app.morphe.extension.shared.requests.BaseOkHttpRequestHook;
 import okhttp3.Interceptor;
 
@@ -41,12 +41,14 @@ public class OkHttpRequestHook extends BaseOkHttpRequestHook {
     @Override
     protected List<Interceptor> getInterceptors() {
         return List.of(
-                new RedgifsUrlSanitizerInterceptor(),
+                new EscapedUrlsPatch(),
+                new FailedGalleryMetadataPatch(),
                 new RedditMediaUndeleteInterceptor(),
                 new RedditSubmissionUndeleteInterceptor(),
                 new RedditSubredditUndeleteInterceptor(),
                 new ImgurUndeleteInterceptor(),
-                new RAllPatch()
+                new RAllPatch(),
+                new RedditInfoResponsePatch()
         );
     }
 

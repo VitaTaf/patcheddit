@@ -36,7 +36,12 @@ internal object BoostApi {
     object BaseTransientBottomBarSnackbarBaseLayout : BoostTypeBinding("Lcom/google/android/material/snackbar/BaseTransientBottomBar\$SnackbarBaseLayout;") {
     }
     object BoostMenuView : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/customviews/menu/MenuView;") {
+        val options get() = field("options:Ljava/util/List;")
         val setMenuOptions get() = method("setMenuOptions(Ljava/util/List;)V")
+    }
+    object MenuAdapter : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/customviews/menu/MenuView\$MenuAdapter;") {
+        val menuView get() = field("menuView:Lcom/rubenmayayo/reddit/ui/customviews/menu/MenuView;")
+        val onBindViewHolder get() = method("onBindViewHolder(Landroidx/recyclerview/widget/RecyclerView\$ViewHolder;I)V")
     }
     object BoostPreferences : BoostTypeBinding("Lapp/morphe/extension/boost/api/BoostPreferences;") {
         val getApiPreference get() = method("getApiPreference(Ljava/lang/String;)Ljava/lang/String;")
@@ -67,8 +72,13 @@ internal object BoostApi {
     }
     object DrawerActivity : BoostTypeBinding("Lapp/morphe/extension/boost/api/DrawerActivity;") {
         val setBottomNavigationVisible get() = method("setBottomNavigationVisible(Z)V")
+        val setProfileAvatar get() = method("setProfileAvatar(Lapp/morphe/extension/boost/api/ProfileAvatarDrawable;)V")
         val setupBottomNavigation get() = method("setupBottomNavigation(I)V")
         val updateInboxCount get() = method("updateInboxCount(I)V")
+    }
+    object ProfileAvatarDrawable : BoostTypeBinding("Lapp/morphe/extension/boost/api/ProfileAvatarDrawable;") {
+        val construct get() = method("<init>(Landroid/graphics/Bitmap;)V")
+        val bitmap get() = field("bitmap:Landroid/graphics/Bitmap;")
     }
     object EmptyRecyclerView : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/customviews/EmptyRecyclerView;") {
         val emptyRecyclerViewBottomNavigationPadding get() = method("emptyRecyclerViewBottomNavigationPadding()V")
@@ -126,6 +136,9 @@ internal object BoostApi {
     object ImageModelFragment : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/fragments/imagemodel/ImageModelFragment;") {
         val onCreateView get() = method("onCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;")
         val onDestroy get() = method("onDestroy()V")
+    }
+    object IndentView : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/customviews/IndentView;") {
+        val onDraw get() = method("onDraw(Landroid/graphics/Canvas;)V")
     }
     object JrawUtils : BoostTypeBinding("Lnet/dean/jraw/util/JrawUtils;") {
         val newUrl get() = method("newUrl(Ljava/lang/String;)Ljava/net/URL;")
@@ -185,6 +198,7 @@ internal object BoostApi {
     object Paginator : BoostTypeBinding("Lnet/dean/jraw/paginators/Paginator;") {
     }
     object RecyclerViewViewHolder : BoostTypeBinding("Landroidx/recyclerview/widget/RecyclerView\$ViewHolder;") {
+        val itemView get() = field("itemView:Landroid/view/View;")
     }
     object RedditJraw : BoostTypeBinding("Lapp/morphe/extension/boost/api/RedditJraw;") {
         val loadSubmissions get() = method("loadSubmissions(Lnet/dean/jraw/paginators/Paginator;Z)Ljava/util/ArrayList;")
@@ -305,6 +319,8 @@ internal object BoostApi {
         val tabRoutes get() = field("tabRoutes:[Ljava/lang/String;")
     }
     object Utils : BoostTypeBinding("Lapp/morphe/extension/boost/api/Utils;") {
+        val copyLink get() = method("copyLink(Landroid/content/Context;Ljava/lang/String;)V")
+        val shareLink get() = method("shareLink(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)V")
         val imageWidgetThumbnailSize get() = method("imageWidgetThumbnailSize()I")
     }
 }

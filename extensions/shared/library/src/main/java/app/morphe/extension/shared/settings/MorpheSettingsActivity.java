@@ -6,23 +6,20 @@
 
 package app.morphe.extension.shared.settings;
 
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
+import android.preference.PreferenceScreen;
 import android.preference.EditTextPreference;
 import android.preference.CheckBoxPreference;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -41,12 +38,13 @@ import app.morphe.extension.shared.debug.ExceptionLogStore;
 import app.morphe.extension.shared.debug.FatalCrashLogs;
 
 @SuppressWarnings("deprecation")
-public final class MorpheSettingsActivity extends PreferenceActivity {
+public final class MorpheSettingsActivity extends MorphePreferenceActivity {
     private static final String TAG = "MorpheDiagnostics";
     private static final String SCREEN = "morphe_screen";
     private static final String EXCEPTIONS = "morphe_exception_log";
     private static final String CRASHES = "morphe_fatal_crash_logs";
     private static final String SOURCE = "morphe_crash_log_source";
+    private static final String BOOST_PACKAGE = "com.rubenmayayo.reddit";
     private static final int SAVE_EXCEPTIONS = 7403;
     private static final int SAVE_CRASH = 7404;
     private static final int OPEN_CRASH = 7405;
@@ -64,21 +62,34 @@ public final class MorpheSettingsActivity extends PreferenceActivity {
 
     @Override
     protected void onCreate(Bundle state) {
-        boolean dark = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
-                == Configuration.UI_MODE_NIGHT_YES;
-        setTheme(dark ? android.R.style.Theme_Material : android.R.style.Theme_Material_Light);
         super.onCreate(state);
         screen = getIntent().getStringExtra(SCREEN);
-        ActionBar bar = getActionBar();
-        if (bar != null) bar.setDisplayHomeAsUpEnabled(true);
-        if (screen == null) {
+        if (screen == null || screen.startsWith("morphe_category_")) {
             OAuthSettings.migrateLegacyPreferences(this);
-            addPreferencesFromResource(resource("xml", "morphe_settings"));
+            addPreferencesFromResource(resource("xml", BOOST_PACKAGE.equals(getPackageName())
+                    ? "morphe_boost_settings_skeleton" : "morphe_settings"));
             setTitle(resource("string", "morphe_settings_title"));
             bindPatchPreferences(getPreferenceScreen());
             bindOAuthPreferences();
-            preference(EXCEPTIONS).setOnPreferenceClickListener(ignored -> openScreen(EXCEPTIONS));
-            preference("morphe_crash_logs").setOnPreferenceClickListener(ignored -> openScreen(CRASHES));
+            bindScreen(EXCEPTIONS);
+            bindScreen(CRASHES);
+            PreferenceScreen root = getPreferenceScreen();
+            MorpheSettingsStyle.addSectionIcons(this, root);
+            for (int index = 0; index < root.getPreferenceCount(); index++) {
+                Preference entry = root.getPreference(index);
+                if (entry instanceof PreferenceScreen) {
+                    entry.setIntent(new Intent(this, MorpheSettingsActivity.class)
+                            .putExtra(SCREEN, entry.getKey()));
+                }
+            }
+            if (screen != null) {
+                Preference entry = findPreference(screen);
+                if (!(entry instanceof PreferenceScreen)) {
+                    throw new IllegalStateException("Missing Morphe settings section: " + screen);
+                }
+                setPreferenceScreen((PreferenceScreen) entry);
+                setTitle(entry.getTitle());
+            }
             return;
         }
         if (!EXCEPTIONS.equals(screen) && !CRASHES.equals(screen)) {
@@ -114,7 +125,10 @@ public final class MorpheSettingsActivity extends PreferenceActivity {
             Preference entry = group.getPreference(index);
             if (entry instanceof PreferenceGroup) bindPatchPreferences((PreferenceGroup) entry);
             String key = entry.getKey();
-            if (entry instanceof CheckBoxPreference && key != null && key.startsWith("morphe_patch_")) {
+            if (entry instanceof CheckBoxPreference && key != null && (key.startsWith("morphe_patch_")
+                    || key.equals("morphe_boost_prefer_high_refresh_rate")
+                    || key.equals("morphe_boost_reddit_undelete_enabled")
+                    || key.equals("morphe_boost_imgur_undelete_enabled"))) {
                 entry.setOnPreferenceChangeListener((preference, value) -> {
                     Toast.makeText(this, "Restart the app to apply the patch change.", Toast.LENGTH_LONG).show();
                     return true;
@@ -156,6 +170,11 @@ public final class MorpheSettingsActivity extends PreferenceActivity {
         return true;
     }
 
+    private void bindScreen(String name) {
+        Preference entry = findPreference(name);
+        if (entry != null) entry.setOnPreferenceClickListener(ignored -> openScreen(name));
+    }
+
     private int resource(String type, String name) {
         return MorpheSettings.resourceId(this, type, name);
     }
@@ -170,15 +189,6 @@ public final class MorpheSettingsActivity extends PreferenceActivity {
     protected void onResume() {
         super.onResume();
         if (reports != null && pendingTasks == 0) refreshReports();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

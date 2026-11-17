@@ -21,7 +21,7 @@ object AppCompatibility {
         Compatibility(
             name = "Boost for Reddit",
             packageName = "com.rubenmayayo.reddit",
-            targets = listOf(AppTarget(version = "1.14.3"))
+            targets = listOf(AppTarget(version = "1.14.4"))
         )
     )
 
@@ -109,12 +109,7 @@ object AppCompatibility {
         Compatibility(
             name = "Sync for Reddit Pro",
             packageName = "com.laurencedawson.reddit_sync.pro",
-            targets = listOf(AppTarget(version = null))
-        ),
-        Compatibility(
-            name = "Sync for Reddit Dev",
-            packageName = "com.laurencedawson.reddit_sync.dev",
-            targets = listOf(AppTarget(version = null))
+            targets = listOf(AppTarget(version = "v23.06.30-13:39"))
         )
     )
 

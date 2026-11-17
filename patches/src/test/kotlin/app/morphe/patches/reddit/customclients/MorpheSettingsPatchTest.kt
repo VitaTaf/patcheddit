@@ -44,7 +44,7 @@ class MorpheSettingsPatchTest {
         val target = parse("<resources><string name=\"native_title\">Native title</string></resources>")
         val original = target.getElementsByTagName("string").item(0)
         val source = resource("settings/values/morphe_diagnostics_strings.xml")
-        addMorpheStrings(target, source)
+        mergeMorpheResources(target, source, "string")
         assertSame(original, target.getElementsByTagName("string").item(0))
         assertEquals("Native title", original.textContent)
         val strings = target.getElementsByTagName("string")
@@ -52,11 +52,23 @@ class MorpheSettingsPatchTest {
         val title = (0 until strings.length).map { strings.item(it) as Element }
             .single { it.getAttribute("name") == "morphe_settings_title" }
         assertEquals("Morphe", title.textContent)
-        assertFailsWith<IllegalArgumentException> { addMorpheStrings(target, source) }
+        assertFailsWith<IllegalArgumentException> { mergeMorpheResources(target, source, "string") }
     }
 
     @Test
-    fun coversAllSixteenPackagesWithoutReplacingBoostSettings() {
+    fun mergesTheFrameworkOverlayWithoutChangingNativeStyles() {
+        val target = parse("<resources><style name=\"NativeTheme\" parent=\"NativeParent\" /></resources>")
+        val original = target.getElementsByTagName("style").item(0)
+        val overlay = resource("settings/values/morphe_settings_style.xml")
+        mergeMorpheResources(target, overlay, "style")
+        assertSame(original, target.getElementsByTagName("style").item(0))
+        assertEquals(2, target.getElementsByTagName("style").length)
+        assertEquals(3, target.getElementsByTagName("item").length)
+        assertFailsWith<IllegalArgumentException> { mergeMorpheResources(target, overlay, "style") }
+    }
+
+    @Test
+    fun coversAllFifteenPackagesWithoutReplacingBoostSettings() {
         val clients = listOf(
             baconReaderMorpheSettingsPatch to AppCompatibility.BaconReader,
             infinityMorpheSettingsPatch to AppCompatibility.Infinity,
@@ -73,7 +85,7 @@ class MorpheSettingsPatchTest {
             assertEquals(compatible.toList(), patch.compatibility)
             for (app in compatible) assertTrue(packages.add(assertNotNull(app.packageName)))
         }
-        assertEquals(16, packages.size)
+        assertEquals(15, packages.size)
         assertFalse(packages.contains("com.rubenmayayo.reddit"))
         assertFalse(ExtensionPatches.Sync in lemmySettings.dependencies)
     }
@@ -98,6 +110,46 @@ class MorpheSettingsPatchTest {
             assertEquals(0, entry.getElementsByTagName("intent-filter").length)
             assertFailsWith<IllegalArgumentException> { registerMorpheSettingsActivity(manifest) }
         }
+    }
+
+    @Test
+    fun boostUsesTheSharedActivityAndOnlyKeepsDedicatedFeatureScreens() {
+        val entry = resource("boost/xml/morphe_boost_settings_entry.xml").documentElement
+        assertEquals("", entry.getAttribute("android:fragment"))
+        val intent = entry.getElementsByTagName("intent").item(0) as Element
+        assertEquals(MORPHE_SETTINGS_ACTIVITY, intent.getAttribute("android:targetClass"))
+
+        for (path in listOf(
+            "boost/xml/morphe_boost_diagnostics_entry.xml",
+        )) {
+            val document = resource(path)
+            val preferences = document.getElementsByTagName("Preference")
+            for (index in 0 until preferences.length) {
+                assertEquals("", (preferences.item(index) as Element).getAttribute("android:fragment"))
+            }
+            for ((path, screen) in mapOf(
+                "boost/xml/morphe_boost_oauth_entry.xml" to "oauth_tokens",
+                "boost/xml/morphe_boost_editor_image_hosting_entry.xml" to "image_hosting",
+            )) {
+                val preference = resource(path).getElementsByTagName("Preference").item(0) as Element
+                assertEquals("", preference.getAttribute("android:fragment"))
+                val featureIntent = preference.getElementsByTagName("intent").item(0) as Element
+                assertEquals("com.rubenmayayo.reddit", featureIntent.getAttribute("android:targetPackage"))
+                assertEquals("app.morphe.extension.boost.settings.BoostSettingsActivity",
+                    featureIntent.getAttribute("android:targetClass"))
+                val extra = featureIntent.getElementsByTagName("extra").item(0) as Element
+                assertEquals("morphe_screen", extra.getAttribute("android:name"))
+                assertEquals(screen, extra.getAttribute("android:value"))
+            }
+        }
+
+        val diagnostics = resource("boost/xml/morphe_boost_diagnostics_entry.xml")
+        val keys = diagnostics.getElementsByTagName("Preference").let { preferences ->
+            (0 until preferences.length).map {
+                (preferences.item(it) as Element).getAttribute("android:key")
+            }.toSet()
+        }
+        assertEquals(setOf("morphe_exception_log", "morphe_crash_logs"), keys)
     }
 
     @Test
