@@ -10,6 +10,10 @@
 package app.morphe.patches.reddit.customclients.boostforreddit.bindings
 
 internal object BoostApi {
+    object SearchOptionsView : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/customviews/SearchOptionsView;") {
+        val refreshOptions get() = method("refreshOptions()V")
+    }
+
     object AHBottomNavigationBehavior : BoostTypeBinding("Lcom/aurelhubert/ahbottomnavigation/AHBottomNavigationBehavior;") {
         val legacyNavigationSnackbarMargin get() = method("legacyNavigationSnackbarMargin(Landroid/view/View;Landroid/view/View;)Z")
     }
@@ -26,6 +30,10 @@ internal object BoostApi {
     }
     object BaseActivity : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/activities/BaseActivity;") {
         val onCreate get() = method("onCreate(Landroid/os/Bundle;)V")
+    }
+    object BackupActivity : BoostTypeBinding("Lcom/rubenmayayo/reddit/BackupActivity;") {
+        val onCreate get() = method("onCreate(Landroid/os/Bundle;)V")
+        val onActivityResult get() = method("onActivityResult(IILandroid/content/Intent;)V")
     }
     object BaseTransientBottomBar : BoostTypeBinding("Lcom/google/android/material/snackbar/BaseTransientBottomBar;") {
         val getAnchorView get() = method("getAnchorView()Landroid/view/View;")
@@ -44,7 +52,11 @@ internal object BoostApi {
         val onBindViewHolder get() = method("onBindViewHolder(Landroidx/recyclerview/widget/RecyclerView\$ViewHolder;I)V")
     }
     object BoostPreferences : BoostTypeBinding("Lapp/morphe/extension/boost/api/BoostPreferences;") {
+        val exportSettings get() = method("exportSettings(Landroid/content/Context;)Ljava/lang/String;")
         val getApiPreference get() = method("getApiPreference(Ljava/lang/String;)Ljava/lang/String;")
+    }
+    object BoostSettingsBackup : BoostTypeBinding("Lapp/morphe/extension/boost/api/BoostSettingsBackup;") {
+        val restore get() = method("restore(Landroid/content/Context;)V")
     }
     object CodecSpecificDataUtil : BoostTypeBinding("Lapp/morphe/extension/boost/api/CodecSpecificDataUtil;") {
         val findSubmissionIndex get() = method("findSubmissionIndex(Ljava/util/List;Lcom/rubenmayayo/reddit/models/reddit/SubmissionModel;)I")
@@ -52,14 +64,29 @@ internal object BoostApi {
     object Comment : BoostTypeBinding("Lnet/dean/jraw/models/Comment;") {
     }
     object CommentModel : BoostTypeBinding("Lcom/rubenmayayo/reddit/models/reddit/CommentModel;") {
+        val body get() = field("body:Ljava/lang/String;")
+        val bodyHtml get() = field("bodyHtml:Ljava/lang/String;")
         val commentModelDeserialize get() = method("commentModelDeserialize(Lnet/dean/jraw/models/Comment;)Lcom/rubenmayayo/reddit/models/reddit/CommentModel;")
+    }
+    object CommentsFragment : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/comments/CommentsFragment;") {
+        val expandCommentBranch get() = method("expandCommentBranch(I)Z")
+    }
+    object CommentViewModel : BoostTypeBinding("Lcom/rubenmayayo/reddit/models/reddit/CommentViewModel;") {
+        val depth get() = field("depth:I")
+        val isExpanded get() = field("isExpanded:Z")
+        val isFullyCollapsed get() = field("isFullyCollapsed:Z")
+        val isVisible get() = field("isVisible:Z")
     }
     object CommentViewHolder : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/adapters/CommentViewHolder;") {
         val bind get() = method("bind(Lcom/rubenmayayo/reddit/models/reddit/CommentModel;ZZZLcom/bumptech/glide/RequestManager;)V")
+        val showMenu get() = method("showMenu(Landroid/view/View;Ljava/util/ArrayList;)V")
         val comment get() = field("comment:Lcom/rubenmayayo/reddit/models/reddit/CommentModel;")
         val commentTv get() = field("commentTv:Lcom/rubenmayayo/reddit/ui/customviews/TableTextView;")
         val distinguishedTv get() = field("distinguishedTv:Lcom/rubenmayayo/reddit/ui/customviews/BabushkaText;")
         val isCollapsed get() = method("isCollapsed()Z")
+    }
+    object CommentMenuListener : BoostTypeBinding("Lapp/morphe/extension/boost/api/CommentMenuListener;") {
+        val onClick get() = method("onClick(Lcom/rubenmayayo/reddit/ui/customviews/menu/MenuOption;)V")
     }
     object ContributionModel : BoostTypeBinding("Lcom/rubenmayayo/reddit/models/reddit/ContributionModel;") {
         val construct get() = method("<init>(Landroid/os/Parcel;)V")
@@ -71,6 +98,7 @@ internal object BoostApi {
         val onNestedPreScroll get() = method("onNestedPreScroll(Landroidx/coordinatorlayout/widget/CoordinatorLayout;Landroid/view/View;Landroid/view/View;II[II)V")
     }
     object DrawerActivity : BoostTypeBinding("Lapp/morphe/extension/boost/api/DrawerActivity;") {
+        val setDrawerSubscriptions get() = method("setDrawerSubscriptions(Ljava/util/ArrayList;)V")
         val setBottomNavigationVisible get() = method("setBottomNavigationVisible(Z)V")
         val setProfileAvatar get() = method("setProfileAvatar(Lapp/morphe/extension/boost/api/ProfileAvatarDrawable;)V")
         val setupBottomNavigation get() = method("setupBottomNavigation(I)V")
@@ -186,6 +214,7 @@ internal object BoostApi {
         val onResume get() = method("onResume()V")
     }
     object MyApplication : BoostTypeBinding("Lcom/rubenmayayo/reddit/MyApplication;") {
+        val attachBaseContext get() = method("attachBaseContext(Landroid/content/Context;)V")
         val onCreate get() = method("onCreate()V")
     }
     object Navigation : BoostTypeBinding("Lapp/morphe/extension/boost/api/Navigation;") {
@@ -264,6 +293,8 @@ internal object BoostApi {
     object SubmissionModel : BoostTypeBinding("Lcom/rubenmayayo/reddit/models/reddit/SubmissionModel;") {
         val fromSubmission get() = method("fromSubmission(Lnet/dean/jraw/models/Submission;)Lcom/rubenmayayo/reddit/models/reddit/SubmissionModel;")
         val removalCategory get() = field("removalCategory:Ljava/lang/String;")
+        val selftext get() = field("selftext:Ljava/lang/String;")
+        val selftextHtml get() = field("selftextHtml:Ljava/lang/String;")
     }
     object SubmissionRecyclerViewFragment : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/fragments/SubmissionRecyclerViewFragment;") {
         val appendSubmissions get() = method("appendSubmissions(Ljava/util/ArrayList;)V")
@@ -277,6 +308,9 @@ internal object BoostApi {
     }
     object SubmissionViewHolder : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/adapters/SubmissionViewHolder;") {
         val bind get() = method("bind(Lcom/rubenmayayo/reddit/models/reddit/SubmissionModel;ZZZLcom/bumptech/glide/RequestManager;)V")
+        val selfTv get() = field("selfTv:Lcom/rubenmayayo/reddit/ui/customviews/TableTextView;")
+        val showMenu get() = method("showMenu(Landroid/view/View;Ljava/util/ArrayList;)V")
+        val onMenuClick get() = method("onMenuClick(Lcom/rubenmayayo/reddit/ui/customviews/menu/MenuOption;)V")
         val infoSeparator get() = field("infoSeparator:Lcom/rubenmayayo/reddit/ui/customviews/BabushkaText\$Part;")
         val infoTop get() = field("infoTop:Lcom/rubenmayayo/reddit/ui/customviews/BabushkaText;")
     }
@@ -290,6 +324,8 @@ internal object BoostApi {
         val onHideToggle get() = method("onHideToggle(ILcom/rubenmayayo/reddit/models/reddit/SubmissionModel;Z)V")
     }
     object TableTextView : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/customviews/TableTextView;") {
+        val setTextHtml get() = method("setTextHtml(Ljava/lang/String;)V")
+        val clearTextExtras get() = method("clearTextExtras()V")
     }
     object ThingFragment : BoostTypeBinding("Lcom/rubenmayayo/reddit/ui/fragments/ThingFragment;") {
         val filteredNextPageSnackbar get() = method("filteredNextPageSnackbar(Landroid/view/View;)V")

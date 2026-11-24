@@ -9,7 +9,7 @@ package app.morphe.patches.reddit.customclients
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.Patch
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.patch.patch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.Companion.toMutable
@@ -17,8 +17,6 @@ import app.morphe.patches.all.misc.PatchCategory
 import app.morphe.patches.reddit.customclients.boostforreddit.misc.settings.boostMorpheSettingsPatch
 import app.morphe.patches.reddit.customclients.boostforreddit.misc.settings.addBoostSettings
 import app.morphe.patches.reddit.customclients.boostforreddit.misc.settings.groupBoostLinkSettings
-import app.morphe.patches.reddit.customclients.boostforreddit.http.interceptHttpRequests
-import app.morphe.patches.reddit.customclients.sync.syncforlemmy.misc.settings.syncMorpheSettingsPatch as lemmySettings
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
@@ -104,8 +102,8 @@ class MorphePatchSettingsTest {
     fun usesTheCorrespondingMenuForEverySupportedPackage() {
         val clients = AppCompatibility.BaconReader + AppCompatibility.Boost + AppCompatibility.Infinity +
             AppCompatibility.JoeyForReddit + AppCompatibility.RedditIsFun + AppCompatibility.Relay +
-            AppCompatibility.SyncForReddit + arrayOf(AppCompatibility.SyncForLemmy)
-        assertEquals(16, clients.size)
+            AppCompatibility.SyncForReddit
+        assertEquals(15, clients.size)
         for (client in clients) {
             val packageName = assertNotNull(client.packageName)
             assertEquals(
@@ -144,6 +142,21 @@ class MorphePatchSettingsTest {
         assertEquals(8, sources.map { it.getAttribute("android:key") }.toSet().size)
         assertTrue(sources.all { it.getAttribute("android:defaultValue") == "true" })
         assertTrue(sources.all { it.getAttribute("android:dependency") == key })
+    }
+
+    @Test
+    fun preservesChainedMediaDependenciesWhenAddingTheMasterSwitch() {
+        val menu = resource("settings/xml/morphe_settings.xml")
+        val options = resource("settings/xml/morphe_rif_inline_media.xml")
+        val dependencies = options.documentElement.childElements().associate {
+            it.getAttribute("android:key") to it.getAttribute("android:dependency")
+        }
+        addMorphePatchPreference(menu, switch(), spec("morphe_patch_inline_media"), options)
+        val controls = menu.documentElement.childElements().last().childElements().drop(1)
+        for (control in controls) {
+            assertEquals(dependencies.getValue(control.getAttribute("android:key")).ifEmpty { "morphe_patch_inline_media" },
+                control.getAttribute("android:dependency"))
+        }
     }
 
     @Test
@@ -212,31 +225,8 @@ class MorphePatchSettingsTest {
     }
 
     @Test
-    fun makesLemmySettingsIndependentOfTheRedditExtensionAndCrashLogging() {
-        val patch = morpheBytecodePatch(name = "Example Lemmy feature",
-            extensionPatch = ExtensionPatches.SyncForLemmy) {
-            compatibleWith(AppCompatibility.SyncForLemmy)
-        }
-        val dependencies = dependencies(patch)
-        assertTrue(lemmySettings in dependencies)
-        assertTrue(morpheSettingsContextPatch in dependencies)
-        assertFalse(ExtensionPatches.Sync in dependencies)
-        assertFalse(dependencies.any { it.name == "Log exceptions" })
-    }
-
-    @Test
-    fun resolvesBoostsCompositeHttpDependenciesToItsNativeMorpheMenu() {
-        val patch = morpheBytecodePatch(
-            name = "Example HTTP feature",
-            extensionPatch = interceptHttpRequests,
-        ) { compatibleWith(*AppCompatibility.Boost) }
-        assertTrue(boostMorpheSettingsPatch in dependencies(patch))
-        assertFalse(lemmySettings in dependencies(patch))
-    }
-
-    @Test
     fun preservesTheLegacyAppAgnosticFactoryWithoutRequiringAClientSettingsMenu() {
-        val extension = bytecodePatch {}
+        val extension = patch {}
         val legacy = fixMoreCommentsPatch(extension, emptyArray())
         assertTrue(legacy.default)
         assertEquals(emptyList(), legacy.compatibility)
@@ -446,8 +436,8 @@ class MorphePatchSettingsTest {
     private fun keys(document: Document) = elements(document, "*")
         .mapNotNull { it.getAttribute("android:key").takeIf(String::isNotBlank) }.toSet()
 
-    private fun dependencies(patch: Patch<*>): Set<Patch<*>> = buildSet {
-        fun visit(current: Patch<*>) {
+    private fun dependencies(patch: Patch): Set<Patch> = buildSet {
+        fun visit(current: Patch) {
             if (add(current)) current.dependencies.forEach(::visit)
         }
         visit(patch)

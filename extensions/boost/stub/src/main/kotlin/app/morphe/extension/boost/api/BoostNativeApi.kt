@@ -83,6 +83,10 @@ interface CaptchaView : app.morphe.extension.boost.api.MvpLoadingView {
 abstract class ChannelFlow protected constructor(stub: Unit) : app.morphe.extension.boost.api.internal.MeasurementProvider {
 }
 
+abstract class CommentMenuListener protected constructor(stub: Unit) {
+    @JvmField val holder: com.rubenmayayo.reddit.ui.adapters.CommentViewHolder = boostApiStub()
+}
+
 interface CommentViewHolderListener {
 }
 
@@ -120,6 +124,7 @@ abstract class Drawer protected constructor(stub: Unit) {
 }
 
 abstract class DrawerActivity protected constructor(stub: Unit) : com.rubenmayayo.reddit.ui.activities.ToolbarActivity(Unit), app.morphe.extension.boost.api.Drawer.ItemListener, app.morphe.extension.boost.api.Drawer.SelectionListener, com.rubenmayayo.reddit.ui.customviews.dialogs.UserSelectorView.Callback {
+    fun reloadDrawerSubscriptions(): Unit = boostApiStub()
     open fun onNavigationLongPress(p0: Int, p1: Boolean): Unit = boostApiStub()
     fun selectAccount(p0: Int): Unit = boostApiStub()
     open fun currentCommunity(): String? = boostApiStub()
@@ -204,6 +209,7 @@ abstract class MyRedditClient protected constructor(stub: Unit) : net.dean.jraw.
 
 abstract class Navigation protected constructor(stub: Unit) {
     companion object {
+        @JvmStatic fun openUrl(p0: android.content.Context?, p1: String?): Unit = boostApiStub()
         @JvmStatic fun openUser(p0: android.content.Context?, p1: String?): Unit = boostApiStub()
         @JvmStatic fun openCommunity(p0: android.app.Activity?, p1: com.rubenmayayo.reddit.models.reddit.SubscriptionViewModel?): Unit = boostApiStub()
         @JvmStatic fun openSupport(p0: android.content.Context?): Unit = boostApiStub()
@@ -214,16 +220,6 @@ abstract class Navigation protected constructor(stub: Unit) {
         @JvmStatic fun openImage(p0: android.content.Context?, p1: com.rubenmayayo.reddit.models.reddit.SubmissionModel?, p2: Boolean): Unit = boostApiStub()
         @JvmStatic fun addAccount(p0: android.app.Activity?): Unit = boostApiStub()
     }
-}
-
-abstract class NativeJsonModel protected constructor(stub: Unit) :
-    net.dean.jraw.models.JsonModel(boostApiStub<com.fasterxml.jackson.databind.JsonNode>()) {
-    fun dataNode(): app.morphe.extension.boost.api.NativeJsonNode = boostApiStub()
-}
-
-abstract class NativeJsonNode protected constructor(stub: Unit) {
-    fun get(p0: String): app.morphe.extension.boost.api.NativeJsonNode? = boostApiStub()
-    fun asBoolean(): Boolean = boostApiStub()
 }
 
 interface NestedScrollingChild {
@@ -272,6 +268,7 @@ abstract class RedditJraw protected constructor(stub: Unit) : app.morphe.extensi
     @JvmField var client: app.morphe.extension.boost.api.MyRedditClient = boostApiStub()
     @JvmField var credentials: net.dean.jraw.http.oauth.Credentials? = boostApiStub()
     fun selectAccount(p0: Int): Unit = boostApiStub()
+    fun ensureAuthenticated(): Unit = boostApiStub()
     fun trendingSearches(): List<*>? = boostApiStub()
     fun trendingRows(): List<*>? = boostApiStub()
     companion object {

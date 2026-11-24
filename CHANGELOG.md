@@ -1,37 +1,192 @@
-# [2.2.0-dev.1](https://github.com/VitaTaf/patcheddit/compare/v2.1.2-dev.4...v2.2.0-dev.1) (2026-11-17)
+# [2.6.0-dev.1](https://github.com/wchill/patcheddit/compare/v2.5.2-dev.1...v2.6.0-dev.1) (2026-11-24)
 
 
 ### Bug Fixes
 
-* **boost:** Make colored bars/lines repeat for very deep comment chains ([42ea130](https://github.com/VitaTaf/patcheddit/commit/42ea130971056571e79e93c46f2c521003ad12b5))
-* Crash in Boost settings menu ([4457af9](https://github.com/VitaTaf/patcheddit/commit/4457af93dcfb13c8a78cb2d8500524596f523f8b))
-* Flatten comment requests for improved performance ([0ad786b](https://github.com/VitaTaf/patcheddit/commit/0ad786b55655095c111c5d53ae80082cabd72c20))
-* **joey:** Restore Redgifs playback through shared HTTP repairs ([de6e413](https://github.com/VitaTaf/patcheddit/commit/de6e4133b849436757c3fc91afec048941dc2cea))
-* **redgifs:** Repair legacy authentication and token refresh ([e58194e](https://github.com/VitaTaf/patcheddit/commit/e58194e025af8d7fd936095391cc74b08a1a16ab))
-* **relay:** Relay Pro crashing on startup ([1c94b7e](https://github.com/VitaTaf/patcheddit/commit/1c94b7ec72073e9a439c3f4cd86f8c675943aeff))
-* **relay:** Restore native Redgifs playback with audio ([7e674e5](https://github.com/VitaTaf/patcheddit/commit/7e674e5f7f51e715ab0f7e5f88e111b18d628e23))
-* **relay:** Restore sidebars when Reddit omits activity counters ([87a4936](https://github.com/VitaTaf/patcheddit/commit/87a4936263c0f3666edcd485a35c751a5e9028b9))
-* Repair links in comment/post bodies that were escaped by New Reddit ([b105de4](https://github.com/VitaTaf/patcheddit/commit/b105de4a4a786520e653252c6e0c831c07cce3bc))
-* Restore swipe-back transparency in Sync and Joey ([fdfba21](https://github.com/VitaTaf/patcheddit/commit/fdfba2138fecda0616a3fb224ec541b44af8f7cf))
-* **rif:** Imgur album loading for albums with 5 character IDs ([d50d802](https://github.com/VitaTaf/patcheddit/commit/d50d8028f841bf7e8638bf8b0eed306953f2c562))
-* **rif:** Imgur albums now properly load in the built-in viewer and thumbnails work ([f219ebe](https://github.com/VitaTaf/patcheddit/commit/f219ebe17b7485e3c3d8bde3d758d53556031666))
-* **rif:** Redgifs native playback ([0ef22e8](https://github.com/VitaTaf/patcheddit/commit/0ef22e8ac7a1001a5b5009e4ae2fee0020e9ea5c))
-* **sync:** Normalize Redgifs URLs before extracting video IDs ([f897af7](https://github.com/VitaTaf/patcheddit/commit/f897af7aa52c4affbedaf8c76c47e2351d1fa39f))
+* /s/ links now resolve when logged in on blocked IP ranges ([f20eda2](https://github.com/wchill/patcheddit/commit/f20eda2027161b88e5eb252902476962964376d4))
+* **boost:** Paginate loading of history view ([3a1d665](https://github.com/wchill/patcheddit/commit/3a1d665c72d75851f7c6768c17cc0599f7b31421))
+* Do not use silent previews for redgifs media in BaconReader/Joey and prefer HD videos ([5c4381f](https://github.com/wchill/patcheddit/commit/5c4381f17050ab915dd32d9defadca1d78253990))
+* Handle /s/ links in BaconReader, Joey, RIF ([c5a3a65](https://github.com/wchill/patcheddit/commit/c5a3a6505bcb74349dc2cdb17aed9bcc7f92e952))
+* Handle share links in Joey, plus handle more link schemas ([8c32f10](https://github.com/wchill/patcheddit/commit/8c32f10f35d7ece93fdaaf357f45c202bf45ac7f))
+* Handle video links in comments in BaconReader, Sync, and Relay ([e1ec23a](https://github.com/wchill/patcheddit/commit/e1ec23a93c2d6fb7159d8dec5a545d880da1aaf6))
+* Random subreddit feed works for all clients ([1d5eea8](https://github.com/wchill/patcheddit/commit/1d5eea82d44dbfb0c2e3f5ac625f1424b62531c1))
+* **relay:** Reserve space for inline media to prevent flickering/jumping ([dfac1ff](https://github.com/wchill/patcheddit/commit/dfac1ff788fa199440a44b8653669e97fe03e10d))
+* Repair gallery metadata in Relay ([395d44d](https://github.com/wchill/patcheddit/commit/395d44d5c1e79fa674d54bb132d075c3802023bb))
+* **rif:** Handle wrapped media links ([300b2e4](https://github.com/wchill/patcheddit/commit/300b2e4ad255fda40f96a330f02a8065edfae250))
+* Use /r/all workaround for BaconReader, Joey, Relay, RIF, and Sync ([16922e4](https://github.com/wchill/patcheddit/commit/16922e4ee104db01fa0fcb785b479d81dd72279b))
 
 
 ### Features
 
-* **boost:** Add ability to strip query parameters when copying/sharing URLs ([4c64292](https://github.com/VitaTaf/patcheddit/commit/4c64292d2ab2e4aebf3cbdd764e82ff6f19c6a8b))
-* **boost:** Add more archiving/paywall bypass services ([c88b0cc](https://github.com/VitaTaf/patcheddit/commit/c88b0cc4576b0418a905565b7899dd2a5a88ae45))
-* **boost:** Boost 1.14.4 support ([5538c39](https://github.com/VitaTaf/patcheddit/commit/5538c39d2b32b92bf6dfb44430d6c3e03ac52dcb))
-* Fix missing gallary images in all apps ([a125874](https://github.com/VitaTaf/patcheddit/commit/a125874c017826a1db88b5c538a6a3b3a259af5d))
-* Reorganize all Morphe settings menus to be more user friendly ([4c1e544](https://github.com/VitaTaf/patcheddit/commit/4c1e54470ec81b7196c484955bda4d04f556bb97))
+* Add high refresh rate support for BaconReader, Joey, Relay, RIF, and Sync ([a34487d](https://github.com/wchill/patcheddit/commit/a34487dbf965bce5050e446fe2ff98208f460e82))
+
+## [2.5.2-dev.1](https://github.com/wchill/patcheddit/compare/v2.5.1...v2.5.2-dev.1) (2026-11-23)
 
 
-### Reverts
+### Bug Fixes
 
-* Revert "fix: Improve comment loading" ([62ac451](https://github.com/VitaTaf/patcheddit/commit/62ac451f5c4b4a2667cd93f004ce068409f7faee))
-* Revert "Merge branch 'pr-124'" ([6f6a1a9](https://github.com/VitaTaf/patcheddit/commit/6f6a1a9fdb797375398ec52c3a3465d6573ad674))
+* **relay:** Hook additional comment renderers for inline media ([c21e1b1](https://github.com/wchill/patcheddit/commit/c21e1b1e5445ded665e760e4c200bfe4d6aa8cbb))
+* Remove Sync for Lemmy support ([0e39e4a](https://github.com/wchill/patcheddit/commit/0e39e4a6d30a2b820151f1e5907053c052fc79fc))
+
+## [2.5.1](https://github.com/wchill/patcheddit/compare/v2.5.0...v2.5.1) (2026-11-23)
+
+
+### Bug Fixes
+
+* **infinity:** Resolve crash due to unspecified color when opening Patcheddit settings ([f615b97](https://github.com/wchill/patcheddit/commit/f615b97d3f3870989e17a8d1cb36a3dc2d3e1d8f))
+* **rif:** Resolved crashing from inline video handling ([4cf9bb0](https://github.com/wchill/patcheddit/commit/4cf9bb0772f8c65ae328f434ec9b63167f2c5b42))
+* **rif:** Resolved HTTP 403 Forbidden on anonymous mode browsing ([4e8441a](https://github.com/wchill/patcheddit/commit/4e8441a2ae10f10a62e8e21a90c54c32162744d1))
+
+## [2.5.1-dev.1](https://github.com/wchill/patcheddit/compare/v2.5.0...v2.5.1-dev.1) (2026-11-23)
+
+
+### Bug Fixes
+
+* **infinity:** Resolve crash due to unspecified color when opening Patcheddit settings ([f615b97](https://github.com/wchill/patcheddit/commit/f615b97d3f3870989e17a8d1cb36a3dc2d3e1d8f))
+* **rif:** Resolved crashing from inline video handling ([4cf9bb0](https://github.com/wchill/patcheddit/commit/4cf9bb0772f8c65ae328f434ec9b63167f2c5b42))
+* **rif:** Resolved HTTP 403 Forbidden on anonymous mode browsing ([4e8441a](https://github.com/wchill/patcheddit/commit/4e8441a2ae10f10a62e8e21a90c54c32162744d1))
+
+# [2.5.0](https://github.com/wchill/patcheddit/compare/v2.4.0...v2.5.0) (2026-11-22)
+
+
+### Bug Fixes
+
+* **boost:** Make status bar opaque in subreddit search results ([4315ee9](https://github.com/wchill/patcheddit/commit/4315ee98c2d272327a42b0c50c72d86305bd6f91))
+* **boost:** navigation bar no longer covered by system gesture bar ([71d8b17](https://github.com/wchill/patcheddit/commit/71d8b17297e4b884cf44b45d51c19aaef1c75314))
+* **boost:** Update Google reverse image search URL ([ebe3b3b](https://github.com/wchill/patcheddit/commit/ebe3b3bf0b15edf7db213c4830d357fb8f18b07e))
+* explain signed-in Reddit feed blocks in RIF ([71c1b34](https://github.com/wchill/patcheddit/commit/71c1b34adc3a0ee278a9a9344e84546429cd2712))
+* preserve Markdown repair compatibility with Android 6 ([1ca00f7](https://github.com/wchill/patcheddit/commit/1ca00f7a43bbc718aa7b2a2ae15b20b5eb17cbcb))
+* **relay:** Handle more filetypes in native image viewer ([9cf3f41](https://github.com/wchill/patcheddit/commit/9cf3f41887144419de1a5f38a20991d9af4898c8))
+* repair relative markdown links on all Reddit clients ([073cd3d](https://github.com/wchill/patcheddit/commit/073cd3dc2f37b28651c3af3764cb7c163069c7a7))
+* restore comment video streams in RIF, Boost, and Joey ([abe4047](https://github.com/wchill/patcheddit/commit/abe40475ea8e0eb5671d2030eb9bb00071fa2f95))
+* restore RIF browsing history during settings import ([dbfa4f5](https://github.com/wchill/patcheddit/commit/dbfa4f55cf709807732ce1a6ddcf3bb7fd0678a8))
+* **rif:** block ads and fix crash on Platinum version ([76e649a](https://github.com/wchill/patcheddit/commit/76e649a4a478247644c3e927fe2c5cd4ad30f08f))
+* **sync:** Crash when tapping toolbar buttons ([ef79a18](https://github.com/wchill/patcheddit/commit/ef79a188c49acbd3ebce3db3df7968d168247e6a))
+
+
+### Features
+
+* add account-aware profile posting to RIF ([c3bd09c](https://github.com/wchill/patcheddit/commit/c3bd09cb4a5b6bb41efde02014665d6e4a2461e5))
+* Add permanent NSFW filtering option ([febb0c7](https://github.com/wchill/patcheddit/commit/febb0c78435c39748290660c1c3db7fcf7122960))
+* Allow deleting of saved exception/crash reports ([cc90196](https://github.com/wchill/patcheddit/commit/cc901967075806ef4df6aeba895a1873fc3bfc11))
+* **boost:** Add ability to backup/restore full viewing history ([49e28c1](https://github.com/wchill/patcheddit/commit/49e28c12e1f850fc8f6626d09b13a788e62e24c9))
+* **boost:** Load all inline media ([b983b21](https://github.com/wchill/patcheddit/commit/b983b21a190d730066faacae213e392c9643e40f))
+* **boost:** Remember collapsed comments ([98ed133](https://github.com/wchill/patcheddit/commit/98ed133d382ce176c6d16056423c951fc3b9b195))
+* **relay:** Add inline media ([855249d](https://github.com/wchill/patcheddit/commit/855249da8eb09eef82f5d23dfc6d87ef34d3a1a5))
+* **rif:** Add inline media support ([220dd17](https://github.com/wchill/patcheddit/commit/220dd17f63d0cba2ab98b357a50673abeec06535))
+* Use new embedded YouTube player for RIF and Sync ([6f0982a](https://github.com/wchill/patcheddit/commit/6f0982a974257e8270840604714cea2048e96071))
+
+# [2.5.0-dev.6](https://github.com/wchill/patcheddit/compare/v2.5.0-dev.5...v2.5.0-dev.6) (2026-11-22)
+
+
+### Features
+
+* Use new embedded YouTube player for RIF and Sync ([6f0982a](https://github.com/wchill/patcheddit/commit/6f0982a974257e8270840604714cea2048e96071))
+
+# [2.5.0-dev.5](https://github.com/wchill/patcheddit/compare/v2.5.0-dev.4...v2.5.0-dev.5) (2026-11-21)
+
+
+### Bug Fixes
+
+* **sync:** Crash when tapping toolbar buttons ([ef79a18](https://github.com/wchill/patcheddit/commit/ef79a188c49acbd3ebce3db3df7968d168247e6a))
+
+
+### Features
+
+* Add permanent NSFW filtering option ([febb0c7](https://github.com/wchill/patcheddit/commit/febb0c78435c39748290660c1c3db7fcf7122960))
+* Allow deleting of saved exception/crash reports ([cc90196](https://github.com/wchill/patcheddit/commit/cc901967075806ef4df6aeba895a1873fc3bfc11))
+
+# [2.5.0-dev.4](https://github.com/wchill/patcheddit/compare/v2.5.0-dev.3...v2.5.0-dev.4) (2026-11-21)
+
+
+### Bug Fixes
+
+* **boost:** Make status bar opaque in subreddit search results ([4315ee9](https://github.com/wchill/patcheddit/commit/4315ee98c2d272327a42b0c50c72d86305bd6f91))
+* **boost:** Update Google reverse image search URL ([ebe3b3b](https://github.com/wchill/patcheddit/commit/ebe3b3bf0b15edf7db213c4830d357fb8f18b07e))
+
+
+### Features
+
+* **boost:** Add ability to backup/restore full viewing history ([49e28c1](https://github.com/wchill/patcheddit/commit/49e28c12e1f850fc8f6626d09b13a788e62e24c9))
+* **boost:** Remember collapsed comments ([98ed133](https://github.com/wchill/patcheddit/commit/98ed133d382ce176c6d16056423c951fc3b9b195))
+
+# [2.5.0-dev.3](https://github.com/wchill/patcheddit/compare/v2.5.0-dev.2...v2.5.0-dev.3) (2026-11-21)
+
+
+### Bug Fixes
+
+* **relay:** Handle more filetypes in native image viewer ([9cf3f41](https://github.com/wchill/patcheddit/commit/9cf3f41887144419de1a5f38a20991d9af4898c8))
+
+
+### Features
+
+* **relay:** Add inline media ([855249d](https://github.com/wchill/patcheddit/commit/855249da8eb09eef82f5d23dfc6d87ef34d3a1a5))
+
+# [2.5.0-dev.2](https://github.com/wchill/patcheddit/compare/v2.5.0-dev.1...v2.5.0-dev.2) (2026-11-20)
+
+
+### Bug Fixes
+
+* **boost:** navigation bar no longer covered by system gesture bar ([71d8b17](https://github.com/wchill/patcheddit/commit/71d8b17297e4b884cf44b45d51c19aaef1c75314))
+
+
+### Features
+
+* **boost:** Load all inline media ([b983b21](https://github.com/wchill/patcheddit/commit/b983b21a190d730066faacae213e392c9643e40f))
+* **rif:** Add inline media support ([220dd17](https://github.com/wchill/patcheddit/commit/220dd17f63d0cba2ab98b357a50673abeec06535))
+
+# [2.5.0-dev.1](https://github.com/wchill/patcheddit/compare/v2.4.1-dev.1...v2.5.0-dev.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* explain signed-in Reddit feed blocks in RIF ([71c1b34](https://github.com/wchill/patcheddit/commit/71c1b34adc3a0ee278a9a9344e84546429cd2712))
+* restore RIF browsing history during settings import ([dbfa4f5](https://github.com/wchill/patcheddit/commit/dbfa4f55cf709807732ce1a6ddcf3bb7fd0678a8))
+
+
+### Features
+
+* add account-aware profile posting to RIF ([c3bd09c](https://github.com/wchill/patcheddit/commit/c3bd09cb4a5b6bb41efde02014665d6e4a2461e5))
+
+## [2.4.1-dev.1](https://github.com/wchill/patcheddit/compare/v2.4.0...v2.4.1-dev.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* preserve Markdown repair compatibility with Android 6 ([1ca00f7](https://github.com/wchill/patcheddit/commit/1ca00f7a43bbc718aa7b2a2ae15b20b5eb17cbcb))
+* repair relative markdown links on all Reddit clients ([073cd3d](https://github.com/wchill/patcheddit/commit/073cd3dc2f37b28651c3af3764cb7c163069c7a7))
+* restore comment video streams in RIF, Boost, and Joey ([abe4047](https://github.com/wchill/patcheddit/commit/abe40475ea8e0eb5671d2030eb9bb00071fa2f95))
+* **rif:** block ads and fix crash on Platinum version ([76e649a](https://github.com/wchill/patcheddit/commit/76e649a4a478247644c3e927fe2c5cd4ad30f08f))
+
+# [2.4.0](https://github.com/wchill/patcheddit/compare/v2.3.0...v2.4.0) (2026-11-17)
+
+
+### Bug Fixes
+
+* **boost:** Add backwards compatibility Spoof client patch for users not using RedReader client ID ([3566b1f](https://github.com/wchill/patcheddit/commit/3566b1fb0ddf4b8926ca0edf43baf09ddc4eb92f))
+* **sync:** Crash in Sync free when opening Settings menu due to empty drawable ([6f9d17e](https://github.com/wchill/patcheddit/commit/6f9d17ed9d02a66a9935fd04eca6e2b32beb9651))
+
+
+### Features
+
+* Add About Patcheddit menu ([61284eb](https://github.com/wchill/patcheddit/commit/61284eb091a669219f70cd96fab798ddf444da4f))
+* **boost:** Add ability to manually fetch comments/posts from Arctic Shift and warn when loading failed ([cc20250](https://github.com/wchill/patcheddit/commit/cc20250bfbd4dd8b08ea5fe72c4751717d774e37))
+* **boost:** Make Arctic Shift URL configurable for development purposes ([342ced9](https://github.com/wchill/patcheddit/commit/342ced923dc33d2a97d9482c7850c4dff4dc0871))
+
+# [2.4.0-dev.1](https://github.com/wchill/patcheddit/compare/v2.3.0...v2.4.0-dev.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* **boost:** Add backwards compatibility Spoof client patch for users not using RedReader client ID ([3566b1f](https://github.com/wchill/patcheddit/commit/3566b1fb0ddf4b8926ca0edf43baf09ddc4eb92f))
+* **sync:** Crash in Sync free when opening Settings menu due to empty drawable ([6f9d17e](https://github.com/wchill/patcheddit/commit/6f9d17ed9d02a66a9935fd04eca6e2b32beb9651))
+
+
+### Features
+
+* Add About Patcheddit menu ([61284eb](https://github.com/wchill/patcheddit/commit/61284eb091a669219f70cd96fab798ddf444da4f))
+* **boost:** Add ability to manually fetch comments/posts from Arctic Shift and warn when loading failed ([cc20250](https://github.com/wchill/patcheddit/commit/cc20250bfbd4dd8b08ea5fe72c4751717d774e37))
+* **boost:** Make Arctic Shift URL configurable for development purposes ([342ced9](https://github.com/wchill/patcheddit/commit/342ced923dc33d2a97d9482c7850c4dff4dc0871))
 
 # [2.3.0](https://github.com/wchill/patcheddit/compare/v2.2.0...v2.3.0) (2026-11-16)
 

@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
@@ -29,6 +30,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +47,23 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
     private static final String EXCEPTIONS = "morphe_exception_log";
     private static final String CRASHES = "morphe_fatal_crash_logs";
     private static final String SOURCE = "morphe_crash_log_source";
+    static final String ABOUT = "morphe_about";
     private static final String BOOST_PACKAGE = "com.rubenmayayo.reddit";
+    private static final List<String> SECTION_ORDER = Arrays.asList(
+            "morphe_category_interface",
+            "morphe_category_feed",
+            "morphe_category_navigation",
+            "morphe_category_links",
+            "morphe_category_comments_posting",
+            "morphe_category_content_filtering",
+            "morphe_category_media",
+            "morphe_category_undelete",
+            "morphe_category_login_api",
+            "morphe_category_ads_tracking",
+            "morphe_category_other_patches",
+            "morphe_category_advanced",
+            "morphe_category_diagnostics"
+    );
     private static final int SAVE_EXCEPTIONS = 7403;
     private static final int SAVE_CRASH = 7404;
     private static final int OPEN_CRASH = 7405;
@@ -56,9 +75,15 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
     private String screen;
     private PreferenceCategory reports;
     private Preference action;
+    private Preference clearAction;
     private int pendingTasks;
     private Uri pendingSource;
     private AlertDialog visibleDialog;
+
+    static int sectionOrder(String key, int fallbackOrder) {
+        int order = SECTION_ORDER.indexOf(key);
+        return order < 0 ? fallbackOrder : order;
+    }
 
     @Override
     protected void onCreate(Bundle state) {
@@ -70,13 +95,25 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
                     ? "morphe_boost_settings_skeleton" : "morphe_settings"));
             setTitle(resource("string", "morphe_settings_title"));
             bindPatchPreferences(getPreferenceScreen());
+            bindMatureContentLock();
             bindOAuthPreferences();
-            bindScreen(EXCEPTIONS);
-            bindScreen(CRASHES);
+            bindScreen(EXCEPTIONS, EXCEPTIONS);
+            bindScreen("morphe_crash_logs", CRASHES);
             PreferenceScreen root = getPreferenceScreen();
+            if (screen == null) root.addPreference(aboutPreference());
             MorpheSettingsStyle.addSectionIcons(this, root);
+            List<Preference> sections = new ArrayList<>();
             for (int index = 0; index < root.getPreferenceCount(); index++) {
-                Preference entry = root.getPreference(index);
+                sections.add(root.getPreference(index));
+            }
+            int fallbackOrder = SECTION_ORDER.size();
+            for (Preference entry : sections) {
+                entry.setOrder(sectionOrder(entry.getKey(), fallbackOrder));
+                if (!SECTION_ORDER.contains(entry.getKey())) fallbackOrder++;
+            }
+            for (Preference entry : sections) root.removePreference(entry);
+            for (Preference entry : sections) root.addPreference(entry);
+            for (Preference entry : sections) {
                 if (entry instanceof PreferenceScreen) {
                     entry.setIntent(new Intent(this, MorpheSettingsActivity.class)
                             .putExtra(SCREEN, entry.getKey()));
@@ -107,6 +144,23 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
             throw new IllegalStateException("The Morphe reports category is missing.");
         }
         reports = (PreferenceCategory) category;
+        if (!exceptions) {
+            // Morphe's logger reads its own setting, not the host app's default preferences.
+            ListPreference debugLevel = (ListPreference) preference(BaseSettings.DEBUG_LEVEL.key);
+            debugLevel.setEntries(new CharSequence[]{
+                    getText(resource("string", "morphe_debug_level_off")),
+                    getText(resource("string", "morphe_debug_level_debug")),
+                    getText(resource("string", "morphe_debug_level_verbose"))
+            });
+            debugLevel.setEntryValues(new CharSequence[]{
+                    DebugLevel.DISABLED.name(), DebugLevel.DEBUG.name(), DebugLevel.VERBOSE.name()
+            });
+            debugLevel.setValue(BaseSettings.DEBUG_LEVEL.get().name());
+            debugLevel.setOnPreferenceChangeListener((entry, value) -> {
+                BaseSettings.DEBUG_LEVEL.save(DebugLevel.valueOf((String) value));
+                return true;
+            });
+        }
         action = preference(exceptions ? "morphe_exception_log_save" : "morphe_crash_logs_open");
         action.setOnPreferenceClickListener(ignored -> {
             if (exceptions) {
@@ -116,8 +170,62 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
             }
             return true;
         });
+        clearAction = preference("morphe_log_clear");
+        clearAction.setOnPreferenceClickListener(ignored -> {
+            confirmDeletion(exceptions ? "morphe_exception_log_clear_title" : "morphe_crash_logs_clear_title",
+                    exceptions ? "morphe_exception_log_clear_confirm" : "morphe_crash_logs_clear_confirm",
+                    this::clearReports);
+            return true;
+        });
         String source = state == null ? null : state.getString(SOURCE);
         pendingSource = source == null ? null : Uri.parse(source);
+    }
+
+    private Preference aboutPreference() {
+        Preference about = new Preference(this);
+        about.setKey(ABOUT);
+        about.setTitle(resource("string", "morphe_about_title"));
+        about.setSummary("Version " + MorpheAboutDialog.version());
+        about.setPersistent(false);
+        about.setOnPreferenceClickListener(ignored -> {
+            dismissDialog();
+            visibleDialog = MorpheAboutDialog.show(this, worker);
+            return true;
+        });
+        return about;
+    }
+
+    private void bindMatureContentLock() {
+        CheckBoxPreference entry = (CheckBoxPreference) findPreference("morphe_enable_mature_content_lock");
+        if (entry == null) return;
+        boolean locked = MatureContentLock.isLocked(this);
+        entry.setChecked(locked);
+        entry.setEnabled(!locked);
+        if (locked) {
+            entry.setOnPreferenceChangeListener(null);
+            entry.setSummary(resource("string", "morphe_mature_content_locked"));
+            return;
+        }
+        entry.setOnPreferenceChangeListener((preference, value) -> {
+            if (!Boolean.TRUE.equals(value) || MatureContentLock.isLocked(this)) return false;
+            show(new AlertDialog.Builder(this)
+                    .setTitle(resource("string", "morphe_mature_content_lock_title"))
+                    .setMessage(resource("string", "morphe_mature_content_lock_confirm"))
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(resource("string", "morphe_mature_content_lock_enable"), (dialog, which) -> {
+                        try {
+                            MatureContentLock.enable(this);
+                            bindMatureContentLock();
+                            message(entry.getTitle().toString(),
+                                    getString(resource("string", "morphe_mature_content_restart")));
+                        } catch (IOException failure) {
+                            Log.e(TAG, "Could not save the mature content lock.", failure);
+                            message(entry.getTitle().toString(),
+                                    getString(resource("string", "morphe_mature_content_lock_failed")));
+                        }
+                    }));
+            return false; // Only reflect the lock after confirmation and saving.
+        });
     }
 
     private void bindPatchPreferences(PreferenceGroup group) {
@@ -170,9 +278,9 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
         return true;
     }
 
-    private void bindScreen(String name) {
-        Preference entry = findPreference(name);
-        if (entry != null) entry.setOnPreferenceClickListener(ignored -> openScreen(name));
+    private void bindScreen(String key, String screen) {
+        Preference entry = findPreference(key);
+        if (entry != null) entry.setOnPreferenceClickListener(ignored -> openScreen(screen));
     }
 
     private int resource(String type, String name) {
@@ -215,7 +323,8 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
             runTask(() -> FatalCrashLogs.list(getApplicationContext()), listing -> {
                 reports.removeAll();
                 for (FatalCrashLogs.Entry entry : listing.entries) {
-                    reports.addPreference(report(entry.name, null, () -> showCrash(entry.uri, entry.name)));
+                    reports.addPreference(report(entry.name, null, () ->
+                            showCrash(entry.uri, entry.name, () -> deleteCrash(entry))));
                 }
                 if (listing.entries.isEmpty()) {
                     notice("No crash reports found", listing.incomplete
@@ -237,7 +346,8 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
         for (ExceptionLogStore.Report entry : entries) {
             reports.addPreference(report(entry.exceptionClass,
                     entry.timestamp.replace('T', ' ').replace("Z", " UTC") + (entry.incomplete ? " (incomplete)" : ""),
-                    () -> showText(entry.exceptionClass, entry.details(MAX_VIEW_CHARACTERS), null, null)));
+                    () -> showText(entry.exceptionClass, entry.details(MAX_VIEW_CHARACTERS),
+                            null, null, () -> deleteException(entry))));
         }
     }
 
@@ -253,14 +363,14 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
         return preference;
     }
 
-    private void showCrash(Uri uri, String name) {
+    private void showCrash(Uri uri, String name, Runnable delete) {
         runTask(() -> FatalCrashLogs.preview(getApplicationContext(), uri, MAX_VIEW_CHARACTERS), preview ->
                 showText(name, (preview.truncated
                         ? "[Preview shows the end of the report. Export it for the complete contents.]\n\n" : "")
-                        + preview.text, uri, name), reason -> message("Could not open crash report", reason));
+                        + preview.text, uri, name, delete), reason -> message("Could not open crash report", reason));
     }
 
-    private void showText(String title, String text, Uri source, String name) {
+    private void showText(String title, String text, Uri source, String name, Runnable delete) {
         TextView content = (TextView) getLayoutInflater().inflate(resource("layout", "morphe_log_text"), null);
         content.setText(text);
         ScrollView scroll = new ScrollView(this);
@@ -274,7 +384,59 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
                 if (!chooseDocument(Intent.ACTION_CREATE_DOCUMENT, SAVE_CRASH, name)) pendingSource = null;
             }).setNegativeButton(android.R.string.cancel, null);
         }
+        if (delete != null) {
+            builder.setNeutralButton(resource("string", "morphe_log_delete"), (ignored, which) ->
+                    confirmDeletion("morphe_log_delete_title", "morphe_log_delete_confirm", delete));
+        }
         show(builder).setOnDismissListener(ignored -> content.setText(""));
+    }
+
+    private void confirmDeletion(String title, String prompt, Runnable delete) {
+        show(new AlertDialog.Builder(this)
+                .setTitle(resource("string", title))
+                .setMessage(resource("string", prompt))
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(resource("string", "morphe_log_delete"), (ignored, which) -> delete.run()));
+    }
+
+    private void deleteException(ExceptionLogStore.Report entry) {
+        runTask(() -> ExceptionHook.getLogStore(getApplicationContext()).deleteReport(entry), removed -> {
+            refreshReports();
+            if (!removed) deletionFailed(getString(resource("string", "morphe_exception_log_changed")));
+        }, reason -> {
+            refreshReports();
+            deletionFailed(reason);
+        });
+    }
+
+    private void deleteCrash(FatalCrashLogs.Entry entry) {
+        runTask(() -> {
+            FatalCrashLogs.delete(getApplicationContext(), entry);
+            return true;
+        }, ignored -> refreshReports(), reason -> {
+            refreshReports();
+            deletionFailed(getString(resource("string", "morphe_crash_logs_delete_failed")));
+        });
+    }
+
+    private void clearReports() {
+        runTask(() -> {
+            if (EXCEPTIONS.equals(screen)) {
+                ExceptionHook.getLogStore(getApplicationContext()).clear();
+                return true;
+            }
+            return FatalCrashLogs.clear(getApplicationContext());
+        }, complete -> {
+            refreshReports();
+            if (!complete) deletionFailed(getString(resource("string", "morphe_crash_logs_clear_incomplete")));
+        }, reason -> {
+            refreshReports();
+            deletionFailed(reason);
+        });
+    }
+
+    private void deletionFailed(String reason) {
+        message(getString(resource("string", "morphe_log_delete_failed")), reason);
     }
 
     private boolean chooseDocument(String intentAction, int request, String name) {
@@ -305,7 +467,7 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
             return;
         }
         if (request == OPEN_CRASH) {
-            showCrash(uri, "crash_" + getPackageName() + ".txt");
+            showCrash(uri, "crash_" + getPackageName() + ".txt", null);
             return;
         }
         runTask(() -> {
@@ -399,5 +561,6 @@ public final class MorpheSettingsActivity extends MorphePreferenceActivity {
     private void updateEnabled() {
         reports.setEnabled(pendingTasks == 0);
         action.setEnabled(pendingTasks == 0);
+        clearAction.setEnabled(pendingTasks == 0);
     }
 }

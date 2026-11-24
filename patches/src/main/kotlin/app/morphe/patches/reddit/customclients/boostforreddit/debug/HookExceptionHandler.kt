@@ -9,7 +9,7 @@
 
 package app.morphe.patches.reddit.customclients.boostforreddit.debug
 
-import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.patch.patch
 import app.morphe.patches.reddit.customclients.AppCompatibility
 import app.morphe.patches.reddit.customclients.ExtensionPatches
 import app.morphe.patches.all.misc.resources.addResourcesPatch
@@ -20,9 +20,7 @@ import app.morphe.patches.reddit.customclients.boostforreddit.misc.settings.boos
 import app.morphe.patches.reddit.customclients.boostforreddit.misc.settings.addBoostSettings
 import app.morphe.util.ResourceGroup
 
-const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/boost/debug/ExceptionHook;"
-
-private val exceptionLogResourcesPatch = resourcePatch(default = false) {
+private val exceptionLogResourcesPatch = patch(default = false) {
     dependsOn(
         boostMorpheSettingsPatch,
         boostMorpheSettingsResourcesPatch,
@@ -43,7 +41,7 @@ val hookExceptionHandler = crashLogPatch(
     compatible = AppCompatibility.Boost,
     mainActivity = BoostApi.BaseActivity.onCreate.fingerprint(),
     exceptionHandler = ExceptionHandlerFingerprint,
-    exceptionHookDescriptor = EXTENSION_CLASS_DESCRIPTOR,
+    exceptionContext = "Non-fatal Boost error",
     settingsPatch = exceptionLogResourcesPatch,
     description = "Logs reported errors and fatal crashes, viewable in Morphe settings.",
 )

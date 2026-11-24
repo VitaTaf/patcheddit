@@ -21,8 +21,6 @@ import app.morphe.patches.reddit.customclients.redditisfun.debug.hookExceptionHa
 import app.morphe.patches.reddit.customclients.redditisfun.misc.settings.rifMorpheSettingsPatch
 import app.morphe.patches.reddit.customclients.relay.debug.hookExceptionHandler as relayPatch
 import app.morphe.patches.reddit.customclients.relay.misc.settings.relayMorpheSettingsPatch
-import app.morphe.patches.reddit.customclients.sync.syncforlemmy.debug.hookExceptionHandler as lemmyPatch
-import app.morphe.patches.reddit.customclients.sync.syncforlemmy.misc.settings.syncMorpheSettingsPatch as lemmySettings
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.debug.hookExceptionHandler as syncPatch
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.misc.settings.syncMorpheSettingsPatch as syncSettings
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -217,8 +215,8 @@ class CrashLogPatchTest {
         ) { true })
     }
 
-    private fun dependencies(patch: Patch<*>): Set<Patch<*>> = buildSet {
-        fun visit(current: Patch<*>) {
+    private fun dependencies(patch: Patch): Set<Patch> = buildSet {
+        fun visit(current: Patch) {
             for (dependency in current.dependencies) if (add(dependency)) visit(dependency)
         }
         visit(patch)

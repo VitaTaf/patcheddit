@@ -12,7 +12,6 @@ import app.morphe.patches.reddit.customclients.infinity.misc.settings.infinityMo
 import app.morphe.patches.reddit.customclients.joey.misc.settings.joeyMorpheSettingsPatch
 import app.morphe.patches.reddit.customclients.redditisfun.misc.settings.rifMorpheSettingsPatch
 import app.morphe.patches.reddit.customclients.relay.misc.settings.relayMorpheSettingsPatch
-import app.morphe.patches.reddit.customclients.sync.syncforlemmy.misc.settings.syncMorpheSettingsPatch as lemmySettings
 import app.morphe.patches.reddit.customclients.sync.syncforreddit.misc.settings.syncMorpheSettingsPatch as syncSettings
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -27,6 +26,7 @@ import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstructio
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction35c
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction3rc
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import javax.xml.parsers.DocumentBuilderFactory
@@ -40,6 +40,58 @@ import kotlin.test.assertTrue
 
 class MorpheSettingsPatchTest {
     @Test
+    fun bundlesUniformSelfContainedIconsForSettingsAndAbout() {
+        val sources = java.util.Properties().apply {
+            assertNotNull(this@MorpheSettingsPatchTest.javaClass.classLoader
+                .getResourceAsStream("settings/icons.properties")).use(::load)
+        }.stringPropertyNames() - "revision"
+        assertEquals(sources, morpheSettingsIconNames.toSet())
+        assertEquals(sources.size, morpheSettingsIconNames.size)
+        for (name in morpheSettingsIconNames) {
+            val icon = resource("settings/drawable/patcheddit_icon_$name.xml").documentElement
+            assertEquals("vector", icon.tagName, name)
+            assertEquals("24dp", icon.getAttribute("android:width"), name)
+            assertEquals("24dp", icon.getAttribute("android:height"), name)
+            assertEquals("24", icon.getAttribute("android:viewportWidth"), name)
+            assertEquals("24", icon.getAttribute("android:viewportHeight"), name)
+            assertFalse(icon.hasAttribute("android:tint"), name)
+            val paths = icon.getElementsByTagName("path")
+            assertTrue(paths.length > 0, name)
+            for (index in 0 until paths.length) {
+                val path = paths.item(index) as Element
+                assertTrue(path.getAttribute("android:pathData").isNotBlank(), name)
+                assertEquals("#FF000000", path.getAttribute("android:fillColor"), name)
+            }
+        }
+        assertEquals("true", resource("settings/drawable/patcheddit_icon_chevron.xml")
+            .documentElement.getAttribute("android:autoMirrored"))
+    }
+
+    @Test
+    fun bundlesCompleteLicenseNoticesForOfflineReading() {
+        val input = assertNotNull(javaClass.classLoader.getResourceAsStream("settings/raw/patcheddit_licenses.json"))
+        val notices = input.use { ObjectMapper().readTree(it) }
+            .associate { it["name"].asText() to it["text"].asText() }
+        val patcheddit = assertNotNull(notices["Patcheddit"])
+        assertTrue(patcheddit.contains("GNU GENERAL PUBLIC LICENSE"))
+        assertTrue(patcheddit.contains("Patcheddit NOTICE"))
+        assertTrue(patcheddit.contains("7c. Project Name Restriction"))
+        assertTrue(assertNotNull(notices["Morphe and ReVanced-derived code"]).contains("Morphe NOTICE"))
+        assertTrue(assertNotNull(notices["Google Material Design icons"]).contains("Apache License"))
+        assertTrue(assertNotNull(notices["Public Suffix List"]).contains("Mozilla Public License"))
+        assertTrue(assertNotNull(notices["OpenJDK desugaring libraries"]).contains("Classpath Exception"))
+        assertFalse(notices.keys.any { it.startsWith("com.google.code.gson:gson:") })
+        assertTrue(notices.any { (name, text) ->
+            name.startsWith("com.google.guava:guava:") && text.contains("Apache License")
+        })
+        assertTrue(notices.keys.any { it.startsWith("androidx.room:") })
+        assertTrue(notices.keys.any { it.startsWith("com.squareup.okhttp3:") })
+        val jackson = notices.filterKeys { it.startsWith("com.fasterxml.jackson.core:") }
+        assertTrue(jackson.keys.any { it.startsWith("com.fasterxml.jackson.core:jackson-databind:") })
+        assertTrue(jackson.values.all { it.contains("Apache License") && it.contains("Jackson") })
+    }
+
+    @Test
     fun mergesDiagnosticStringsIntoTheStandardValuesFileWithoutReplacingNativeStrings() {
         val target = parse("<resources><string name=\"native_title\">Native title</string></resources>")
         val original = target.getElementsByTagName("string").item(0)
@@ -51,7 +103,7 @@ class MorpheSettingsPatchTest {
         assertEquals(source.getElementsByTagName("string").length + 1, strings.length)
         val title = (0 until strings.length).map { strings.item(it) as Element }
             .single { it.getAttribute("name") == "morphe_settings_title" }
-        assertEquals("Morphe", title.textContent)
+        assertEquals("Patcheddit", title.textContent)
         assertFailsWith<IllegalArgumentException> { mergeMorpheResources(target, source, "string") }
     }
 
@@ -68,7 +120,7 @@ class MorpheSettingsPatchTest {
     }
 
     @Test
-    fun coversAllFifteenPackagesWithoutReplacingBoostSettings() {
+    fun coversNonBoostPackagesWithoutReplacingBoostSettings() {
         val clients = listOf(
             baconReaderMorpheSettingsPatch to AppCompatibility.BaconReader,
             infinityMorpheSettingsPatch to AppCompatibility.Infinity,
@@ -76,7 +128,6 @@ class MorpheSettingsPatchTest {
             rifMorpheSettingsPatch to AppCompatibility.RedditIsFun,
             relayMorpheSettingsPatch to AppCompatibility.Relay,
             syncSettings to AppCompatibility.SyncForReddit,
-            lemmySettings to arrayOf(AppCompatibility.SyncForLemmy),
         )
         val packages = mutableSetOf<String>()
         for ((patch, compatible) in clients) {
@@ -85,9 +136,34 @@ class MorpheSettingsPatchTest {
             assertEquals(compatible.toList(), patch.compatibility)
             for (app in compatible) assertTrue(packages.add(assertNotNull(app.packageName)))
         }
-        assertEquals(15, packages.size)
+        assertEquals(14, packages.size)
         assertFalse(packages.contains("com.rubenmayayo.reddit"))
-        assertFalse(ExtensionPatches.Sync in lemmySettings.dependencies)
+    }
+
+    @Test
+    fun restrictsMatureContentLockTestControlWithoutChangingDebuggability() {
+        for (patch in listOf(baconReaderNsfwOption, boostNsfwOption, infinityNsfwOption, joeyNsfwOption,
+            rifNsfwOption, relayNsfwOption, syncNsfwOption)) {
+            assertFalse(patch.default)
+            assertTrue(patch.options.isEmpty())
+        }
+        val manifest = parse("""
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example">
+                <application android:debuggable="false">
+                    <receiver android:name=".NativeReceiver" android:exported="false" />
+                </application>
+            </manifest>
+        """)
+        registerMatureContentLockTestReceiver(manifest)
+        val application = manifest.getElementsByTagName("application").item(0) as Element
+        val receivers = application.getElementsByTagName("receiver")
+        assertEquals("false", application.getAttribute("android:debuggable"))
+        assertEquals("false", (receivers.item(0) as Element).getAttribute("android:exported"))
+        val receiver = receivers.item(1) as Element
+        assertEquals("true", receiver.getAttribute("android:exported"))
+        assertEquals("android.permission.INJECT_EVENTS", receiver.getAttribute("android:permission"))
+        assertEquals(0, receiver.getElementsByTagName("intent-filter").length)
+        assertFailsWith<IllegalArgumentException> { registerMatureContentLockTestReceiver(manifest) }
     }
 
     @Test
@@ -154,8 +230,7 @@ class MorpheSettingsPatchTest {
 
     @Test
     fun addsAnExplicitIntentToPlainAndQualifiedPreferenceScreensForEveryPackageVariant() {
-        val packages = AppCompatibility.RedditIsFun + AppCompatibility.Infinity + AppCompatibility.SyncForReddit +
-                arrayOf(AppCompatibility.SyncForLemmy)
+        val packages = AppCompatibility.RedditIsFun + AppCompatibility.Infinity + AppCompatibility.SyncForReddit
         for (namespaceAware in listOf(false, true)) {
             for (root in listOf("PreferenceScreen", "androidx.preference.PreferenceScreen")) {
                 for (app in packages) {
@@ -169,6 +244,7 @@ class MorpheSettingsPatchTest {
                     assertSame(native, target.getElementsByTagName("Preference").item(1))
                     val preference = target.getElementsByTagName("Preference").item(0) as Element
                     assertEquals(MORPHE_SETTINGS_ENTRY, preference.getAttribute("android:key"))
+                    assertEquals("@drawable/morphe_settings_icon", preference.getAttribute("android:icon"))
                     assertEquals("", preference.getAttribute("android:fragment"))
                     val intent = preference.getElementsByTagName("intent").item(0) as Element
                     assertEquals(app.packageName, intent.getAttribute("android:targetPackage"))
@@ -255,6 +331,9 @@ class MorpheSettingsPatchTest {
         val label = labels.item(0) as Element
         assertEquals("@string/morphe_settings_title", label.getAttribute("android:text"))
         assertFalse(label.hasAttribute("android:id"))
+        val icon = card.getElementsByTagName("native.CImageView").item(0) as Element
+        assertEquals("@drawable/morphe_settings_icon", icon.getAttribute("app:srcCompat"))
+        assertEquals("@style/native_icon", icon.getAttribute("style"))
         val row = label.parentNode as Element
         assertEquals("@id/$MORPHE_SETTINGS_ENTRY", row.getAttribute("android:id"))
         assertEquals("@style/native_row", row.getAttribute("style"))
@@ -324,14 +403,15 @@ class MorpheSettingsPatchTest {
     ).toMutable()
 
     private fun joeyLayout() = parse("""
-        <native.CLinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+        <native.CLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
             <native.CNestedScrollView>
                 <native.CLinearLayout android:orientation="vertical">
                     <native.CCardView style="@style/native_card" android:id="@id/native_card">
                         <native.CLinearLayout android:orientation="vertical" android:id="@id/native_content">
                             <native.CTextView android:text="Native category" />
                             <native.CLinearLayout android:id="@id/native_setting" style="@style/native_row">
-                                <native.CImageView />
+                                <native.CImageView app:srcCompat="@drawable/native_icon" style="@style/native_icon" />
                                 <native.CTextView android:id="@id/native_label" android:text="Native setting" />
                             </native.CLinearLayout>
                         </native.CLinearLayout>

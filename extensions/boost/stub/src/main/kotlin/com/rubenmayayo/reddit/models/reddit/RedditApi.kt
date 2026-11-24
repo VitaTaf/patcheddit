@@ -16,6 +16,9 @@ private fun <T> boostApiStub(): T = throw UnsupportedOperationException("Compile
 abstract class CommentModel protected constructor(stub: Unit) : com.rubenmayayo.reddit.models.reddit.CommentViewModel(Unit) {
     @JvmField var body: String = boostApiStub()
     @JvmField var bodyHtml: String = boostApiStub()
+    companion object {
+        @JvmStatic fun commentModelDeserialize(p0: net.dean.jraw.models.Comment?): com.rubenmayayo.reddit.models.reddit.CommentModel? = boostApiStub()
+    }
 }
 
 abstract class CommentViewModel protected constructor(stub: Unit) : com.rubenmayayo.reddit.models.reddit.PublicContributionModel(Unit) {
@@ -61,6 +64,7 @@ open class SubscriptionViewModel protected constructor(stub: Unit) : android.os.
     constructor(p0: String?) : this(Unit) { boostApiStub<Unit>() }
     constructor(p0: String?, p1: Boolean) : this(Unit) { boostApiStub<Unit>() }
     @JvmField var community: String = boostApiStub()
+    @JvmField var isMultireddit: Boolean = boostApiStub()
     override fun describeContents(): Int = boostApiStub()
     override fun writeToParcel(p0: android.os.Parcel, p1: Int): Unit = boostApiStub()
     companion object {

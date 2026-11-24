@@ -10,9 +10,10 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.Compatibility
 import app.morphe.patcher.patch.Patch
-import app.morphe.patcher.patch.ResourcePatchContext
-import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.patch.resourcePatch
+import app.morphe.patcher.patch.decode
+import app.morphe.patcher.patch.document
+import app.morphe.patcher.patch.mutableClassDefBy
+import app.morphe.patcher.patch.patch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.all.misc.PatchCategory
 import app.morphe.patches.all.misc.resources.addResourcesPatch
@@ -29,25 +30,26 @@ import org.w3c.dom.Element
 internal const val MORPHE_SETTINGS_ACTIVITY = "app.morphe.extension.shared.settings.MorpheSettingsActivity"
 internal const val MORPHE_SETTINGS_HOOK = "Lapp/morphe/extension/shared/settings/MorpheSettings;"
 internal const val MORPHE_SETTINGS_ENTRY = "morphe_settings_entry"
+private const val MORPHE_FRAMEWORK_OVERLAY = "MorpheSettingsFrameworkOverlay"
 internal const val MORPHE_SETTINGS_DESCRIPTION =
     "Adds a Morphe settings menu for included patches, with exception and fatal crash log viewers."
 
-internal val morpheSettingsContextPatch = bytecodePatch(default = false) {
+internal val morpheSettingsContextPatch = patch(default = false) {
     lateinit var applicationType: String
-    dependsOn(resourcePatch(default = false) {
+    lateinit var packageName: String
+    dependsOn(patch(default = false) {
         execute {
             document("AndroidManifest.xml").use { manifest ->
                 val application = checkNotNull(manifest.getElementsByTagName("application").item(0) as? Element) {
                     "AndroidManifest.xml has no application element."
                 }
-                applicationType = applicationDescriptor(
-                    manifest.documentElement.getAttribute("package"),
-                    application.getAttribute("android:name"),
-                )
+                packageName = manifest.documentElement.getAttribute("package")
+                applicationType = applicationDescriptor(packageName, application.getAttribute("android:name"))
             }
         }
     })
     finalize {
+        installMatureContentEnforcement(packageName)
         onCreateMethod(mutableClassDefBy(applicationType)).addInstruction(
             0,
             "invoke-static/range {p0 .. p0}, $PATCH_SETTINGS_DESCRIPTOR->initialize(Landroid/app/Application;)V",
@@ -55,12 +57,20 @@ internal val morpheSettingsContextPatch = bytecodePatch(default = false) {
     }
 }
 
-internal val morpheSettingsResourcesPatch = resourcePatch(default = false) {
+internal val morpheSettingsIconNames = listOf(
+    "palette", "feed", "explore", "link", "comment", "media", "restore", "key", "security",
+    "settings", "code", "bug", "info", "download", "error", "forum", "group", "description", "chevron",
+)
+
+internal val morpheSettingsResourcesPatch = patch(default = false) {
     dependsOn(addResourcesPatch(
         "settings",
         ResourceGroup("xml", "morphe_settings.xml", "morphe_settings_entry.xml",
             "morphe_exception_log.xml", "morphe_fatal_crash_logs.xml"),
         ResourceGroup("layout", "morphe_settings_entry.xml", "morphe_log_text.xml"),
+        ResourceGroup("drawable", "morphe_settings_icon.xml",
+            *morpheSettingsIconNames.map { "patcheddit_icon_$it.xml" }.toTypedArray()),
+        ResourceGroup("raw", "patcheddit_licenses.json"),
     ))
 
     execute {
@@ -116,11 +126,12 @@ internal fun registerMorpheSettingsActivity(manifest: Document) {
 
 internal fun morphePreferencesPatch(
     name: String,
-    extensionPatch: Patch<*>,
+    extensionPatch: Patch,
     compatible: Array<Compatibility>,
     resourceName: String,
     nativeStyle: Boolean = false,
-) = resourcePatch(
+    nativeSettingsBackground: String? = null,
+) = patch(
     name = "$name Morphe settings",
     description = MORPHE_SETTINGS_DESCRIPTION,
     default = true,
@@ -130,6 +141,18 @@ internal fun morphePreferencesPatch(
     dependsOn(extensionPatch, morpheSettingsResourcesPatch, morpheSettingsContextPatch)
 
     execute {
+        if (nativeSettingsBackground != null) {
+            document("res/values/styles.xml").use { styles ->
+                val overlay = styles.documentElement.childElements()
+                    .single { it.tagName == "style" && it.getAttribute("name") == MORPHE_FRAMEWORK_OVERLAY }
+                for (attribute in listOf("android:windowBackground", "colorSurface")) {
+                    overlay.appendChild(styles.createElement("item").apply {
+                        setAttribute("name", attribute)
+                        textContent = nativeSettingsBackground
+                    })
+                }
+            }
+        }
         val packageName = document("AndroidManifest.xml").use {
             it.documentElement.getAttribute("package").also { name ->
                 require(name.isNotBlank()) { "AndroidManifest.xml has no package name." }
@@ -145,10 +168,10 @@ internal fun morphePreferencesPatch(
 
 internal fun morpheListSettingsPatch(
     name: String,
-    extensionPatch: Patch<*>,
+    extensionPatch: Patch,
     compatible: Array<Compatibility>,
     menu: Fingerprint,
-) = bytecodePatch(
+) = patch(
     name = "$name Morphe settings",
     description = MORPHE_SETTINGS_DESCRIPTION,
     default = true,
@@ -162,7 +185,7 @@ internal fun morpheListSettingsPatch(
     }
 }
 
-internal fun ResourcePatchContext.settingsResourcePaths(type: String, name: String): List<String> {
+internal fun settingsResourcePaths(type: String, name: String): List<String> {
     return decode("res/$type*/$name.xml")
         .also { require(it.isNotEmpty()) { "The app has no $type/$name settings resource." } }
 }
@@ -251,6 +274,7 @@ internal fun addMorpheLayoutEntry(document: Document) {
     val row = content.childElements().first {
         it.tagName.endsWith("LinearLayout") && it.hasAttribute("android:id")
     }
+    val icon = row.childElements().single { it.tagName.endsWith("ImageView") }
     val label = row.childElements().single { it.tagName.endsWith("TextView") }
     val newCard = card.cloneNode(false) as Element
     val newContent = content.cloneNode(false) as Element
@@ -258,6 +282,11 @@ internal fun addMorpheLayoutEntry(document: Document) {
     newContent.removeAttribute("android:id")
     val newRow = row.cloneNode(false) as Element
     newRow.setAttribute("android:id", "@id/$MORPHE_SETTINGS_ENTRY")
+    newRow.appendChild(icon.cloneNode(false).also {
+        (it as Element).removeAttribute("android:id")
+        val source = listOf("app:srcCompat", "android:src").firstOrNull(it::hasAttribute) ?: "android:src"
+        it.setAttribute(source, "@drawable/morphe_settings_icon")
+    })
     newRow.appendChild(label.cloneNode(false).also {
         (it as Element).removeAttribute("android:id")
         it.setAttribute("android:text", "@string/morphe_settings_title")

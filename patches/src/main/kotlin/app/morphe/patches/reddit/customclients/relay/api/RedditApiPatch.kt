@@ -6,6 +6,7 @@
 
 package app.morphe.patches.reddit.customclients.relay.api
 
+import app.morphe.patches.reddit.customclients.relayRAllPatch
 import app.morphe.patches.reddit.customclients.relay.fix.apilookups.fixRedditApiLookups
 import app.morphe.patches.reddit.customclients.relay.fix.gallery.fixFailedGalleryImagesPatch
 import app.morphe.patches.reddit.customclients.relay.fix.login.modifyLoginWebView
@@ -13,6 +14,7 @@ import app.morphe.patches.reddit.customclients.relay.fix.morecomments.fixMoreCom
 import app.morphe.patches.reddit.customclients.relay.fix.slink.fixSLinksPatch
 import app.morphe.patches.reddit.customclients.relay.fix.sidebar.fixSidebarPatch
 import app.morphe.patches.reddit.customclients.redditApiPatch
+import app.morphe.patches.reddit.customclients.legacySpoofClientPatch
 
 @Suppress("unused")
 val redditApiPatch = redditApiPatch(
@@ -21,6 +23,10 @@ val redditApiPatch = redditApiPatch(
     fixRedditApiLookups,
     fixFailedGalleryImagesPatch,
     fixMoreComments,
+    relayRAllPatch,
     fixSLinksPatch,
     fixSidebarPatch,
 )
+
+@Suppress("unused")
+val legacySpoofClientPatch = legacySpoofClientPatch(redditApiPatch)
